@@ -13,7 +13,9 @@ router.get("/checkout", requireUser, async (req, res) => {
     const items = (cart?.items || []).filter(i => i.product && i.product.isAvailable);
     if (!items.length) return res.redirect("/cart");
     const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-    res.render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, error: null });
+    const account = await CustomerAccount.findOne({ user: req.user._id }).lean();
+    const defaultAddress = account?.addresses?.find(address => address.isDefault) || account?.addresses?.[0] || null;
+    res.render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress, error: null });
   } catch (e) { console.error("Checkout:", e); res.status(500).send("Unable to open checkout."); }
 });
 
