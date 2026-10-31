@@ -3,6 +3,7 @@ const router = express.Router();
 const { restrictToLoggedInUserOnly } = require("../middlewares/authentication");
 const User = require("../models/user");
 const FoodProduct = require("../models/FoodProduct");
+const FoodOrder = require("../models/FoodOrder");
 const cloudinaryUpload = require("../middlewares/CloudinaryUploads");
 const imageUpload = cloudinaryUpload.mediaUpload;
 
@@ -39,10 +40,32 @@ router.get("/dashboard", async (req, res) => {
   if (!sellerReady(req.user)) return res.redirect("/seller/register");
   try {
     const products = await FoodProduct.find({ seller: req.user._id }).sort({ createdAt: -1 }).lean();
-    return res.render("seller/dashboard", { title: "Seller Dashboard | Goan Craving", user: req.user, products });
+    const records = await FoodOrder.find({ "items.seller": req.user._id }).sort({ createdAt: -1 }).lean();
+    const sellerOrders = records.map(order => ({ ...order, items: order.items.filter(item => String(item.seller) === String(req.user._id)) })).filter(order => order.items.length);
+    const activeOrders = sellerOrders.filter(order => order.orderStatus !== "cancelled");
+    const unitsSold = activeOrders.reduce((sum, order) => sum + order.items.reduce((n, item) => n + item.quantity, 0), 0);
+    const salesTotal = activeOrders.reduce((sum, order) => sum + order.items.reduce((n, item) => n + item.unitPrice * item.quantity, 0), 0);
+    const itemSales = products.map(product => {
+      const matching = activeOrders.flatMap(order => order.items).filter(item => String(item.product) === String(product._id));
+      const productOrders = activeOrders.filter(order => order.items.some(item => String(item.product) === String(product._id)));
+      return { name: product.name, orders: productOrders.length, units: matching.reduce((sum, item) => sum + item.quantity, 0), total: matching.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) };
+    });
+    return res.render("seller/dashboard", { title: "Seller Dashboard | Goan Craving", user: req.user, products, sellerOrderCount: sellerOrders.length, unitsSold, salesTotal, itemSales });
   } catch (error) {
     console.error("Seller dashboard:", error.message);
     return res.status(500).send("Unable to load seller dashboard.");
+  }
+});
+
+router.get("/orders", async (req, res) => {
+  if (!sellerReady(req.user)) return res.redirect("/seller/register");
+  try {
+    const records = await FoodOrder.find({ "items.seller": req.user._id }).sort({ createdAt: -1 }).lean();
+    const orders = records.map(order => ({ ...order, items: order.items.filter(item => String(item.seller) === String(req.user._id)) })).filter(order => order.items.length);
+    return res.render("seller/orders", { title: "Seller Orders | Goan Craving", user: req.user, orders });
+  } catch (error) {
+    console.error("Seller orders:", error.message);
+    return res.status(500).send("Unable to load seller orders.");
   }
 });
 
