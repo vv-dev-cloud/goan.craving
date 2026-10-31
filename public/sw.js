@@ -1,4 +1,4 @@
-const BLOGIFY_SW_VERSION = "blogify-push-v2";
+const BLOGIFY_SW_VERSION = "goan-craving-push-v3";
 
 self.addEventListener("install", event => {
     event.waitUntil(self.skipWaiting());
@@ -16,7 +16,7 @@ self.addEventListener("push", event => {
         data = { title: "Blogify", body: event.data ? event.data.text() : "You have a new notification." };
     }
 
-    const title = data.title || "Blogify";
+    const title = data.title || "Goan Craving";
     const options = {
         body: data.body || "You have a new notification.",
         icon: data.icon || "/imgs/default.png",
