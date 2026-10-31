@@ -31,7 +31,7 @@ body{background:var(--gc-cream)!important;color:#27352b!important;margin-top:70p
   </section>
 
   <div class="quick-grid">
-    <a class="quick-card" href="#orders"><span class="quick-icon"><i class="fa-solid fa-bag-shopping"></i></span><span><strong>My Orders</strong><small><%= orders.length %> recent orders</small></span></a>
+    <a class="quick-card" href="/orders"><span class="quick-icon"><i class="fa-solid fa-bag-shopping"></i></span><span><strong>My Orders</strong><small>Track and manage your food orders</small></span></a>
     <a class="quick-card" href="#addresses"><span class="quick-icon"><i class="fa-solid fa-location-dot"></i></span><span><strong>Saved Addresses</strong><small><%= account.addresses.length %> delivery locations</small></span></a>
   </div>
 
@@ -76,13 +76,6 @@ body{background:var(--gc-cream)!important;color:#27352b!important;margin-top:70p
       <div class="form-actions"><button class="gc-btn" type="submit">Save bank details</button><button class="gc-btn light" type="button" onclick="toggleForm('bankForm',false)">Cancel</button></div>
     </form>
     <% if(!account.bankAccounts.length){ %><div class="empty-state"><i class="fa-solid fa-building-columns"></i><div><strong>No refund bank account saved</strong></div><span>Add a bank account if support needs to arrange an eligible refund by bank transfer.</span></div><% } else { %><div class="bank-grid"><% account.bankAccounts.forEach(b=>{ %><article class="item-card"><div class="item-head"><strong><%=b.bankName%></strong><span class="pill">Refund account</span></div><p><%=b.accountHolder%><br>Account ending •••• <%=b.accountNumberLast4%><br>IFSC: <%=b.ifsc%></p><div class="item-actions"><button class="gc-btn danger" type="button" onclick="deleteItem('/account/bank-accounts/<%=b._id%>')">Remove</button></div></article><% }) %></div><% } %>
-  </section>
-
-  <section class="section-card" id="orders">
-    <div class="section-title"><h2><i class="fa-solid fa-bag-shopping"></i> My orders</h2><a class="gc-btn light" href="/orders">View all</a></div>
-    <% if(!orders.length){ %><div class="empty-state"><i class="fa-solid fa-basket-shopping"></i><div><strong>No orders yet</strong></div><span>Your food orders will appear here.</span><p><a href="/search" style="color:#df713b;font-weight:800">Explore food</a></p></div><% } else { %>
-      <div class="orders-list"><% orders.forEach(o=>{ %><article class="order-row"><div><strong>Order #<%=String(o._id).slice(-8).toUpperCase()%></strong><p><%=new Date(o.createdAt).toLocaleDateString()%> · <%=o.items.length%> item(s) · ₹<%=Number(o.total).toFixed(2)%></p><p><%=o.paymentMethod.toUpperCase()%> · <%=o.paymentStatus%><% if(o.refundStatus && o.refundStatus!=='none'){ %> · Refund: <%=o.refundStatus%><% } %></p></div><div><span class="status <%=o.orderStatus%>"><%=o.orderStatus.replace(/_/g,' ')%></span><div class="item-actions"><a class="gc-btn light" style="text-decoration:none" href="/orders/<%=o._id%>">Details</a><% if(['placed','confirmed'].includes(o.orderStatus)){ %><button class="gc-btn danger" type="button" onclick="cancelOrder('<%=o._id%>')">Cancel</button><% } %></div></div></article><% }) %></div>
-    <% } %>
   </section>
 
   <section class="section-card"><div class="section-title"><h2><i class="fa-solid fa-life-ring"></i> Customer support</h2></div><div class="quick-grid" style="margin:0"><a class="quick-card" href="/support/chat"><span class="quick-icon"><i class="fa-solid fa-headset"></i></span><span><strong>Help & support</strong><small>Get help with your order</small></span></a><a class="quick-card" href="/user/profile/settings"><span class="quick-icon"><i class="fa-solid fa-shield-halved"></i></span><span><strong>Privacy & settings</strong><small>Manage account preferences</small></span></a></div><p style="margin:18px 0 0"><a href="/user/logout" style="color:#b64735;font-weight:800;text-decoration:none"><i class="fa-solid fa-right-from-bracket"></i> Log out</a></p></section>
