@@ -11,7 +11,7 @@
 <%- include("../partials/nave") %>
 <main class="detail">
   <h1>Order details</h1>
-  <p class="muted">Order #<%=String(order._id).slice(-8).toUpperCase()%> · <%=new Date(order.createdAt).toLocaleString("en-IN")%></p>
+  <p class="muted">Order #<%=(order.orderNumber || ("GC-" + String(order._id).slice(-8).toUpperCase()))%> · <%=new Date(order.createdAt).toLocaleString("en-IN")%></p>
   <% if(reviewMessage==="success"){ %><div class="notice">Your food review has been saved. Thank you for sharing your experience!</div><% } else if(reviewMessage==="already-submitted"){ %><div class="notice">Your review is already recorded. You can edit it below.</div><% } %>
   <section class="panel">
     <h2>Ordered food</h2>
