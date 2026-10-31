@@ -41,9 +41,8 @@ function validAddress(body) {
 router.get("/", async (req, res) => {
   try {
     const account = await accountFor(req.user._id);
-    const orders = await FoodOrder.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(50).lean();
     const user = { _id: req.user._id, fullName: req.user.fullName, email: req.user.email, profileImageURL: req.user.profileImageURL };
-    res.render("food/account", { title: "My Account | Goan Craving", user, account, orders, error: null, success: null });
+    res.render("food/account", { title: "My Account | Goan Craving", user, account, error: null, success: null });
   } catch (error) {
     console.error("Customer account:", error);
     res.status(500).send("Unable to load your account right now.");
