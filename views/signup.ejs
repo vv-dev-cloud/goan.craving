@@ -3,13 +3,13 @@
 <head>
   <%- include("./partials/head") %>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Sign Up - Blogify</title>
+  <title>Sign Up - Goan Craving</title>
   <style>
     :root{--a-bg:#f5f7ff;--a-card:#fff;--a-text:#111827;--a-muted:#64748b;--a-border:#e5e7eb;--a-primary:#6366f1;--a-primary2:#8b5cf6;--a-soft:#f8fafc}
     *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     body{min-height:100dvh;background:radial-gradient(circle at 10% 10%,rgba(99,102,241,.14),transparent 32%),radial-gradient(circle at 90% 90%,rgba(139,92,246,.12),transparent 32%),var(--a-bg);color:var(--a-text);padding:82px 14px 24px}
     .auth-container{width:100%;min-height:calc(100dvh - 106px);display:grid;place-items:center}.auth-card{width:min(100%,450px);background:rgba(255,255,255,.95);border:1px solid rgba(255,255,255,.9);border-radius:24px;box-shadow:0 24px 70px rgba(30,41,59,.13);overflow:hidden;animation:rise .35s ease-out}.auth-card-body{padding:28px 28px 24px}
-    .auth-brand{width:50px;height:50px;margin:0 auto 13px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,var(--a-primary),var(--a-primary2));color:#fff;font-size:1.25rem;font-weight:900;box-shadow:0 12px 28px rgba(99,102,241,.26)}.auth-header{text-align:center;margin-bottom:21px}.auth-header h2{margin:0 0 6px;font-size:1.6rem;letter-spacing:-.04em}.auth-header p{margin:0;color:var(--a-muted);font-size:.85rem}
+    .auth-brand{display:block;width:min(230px,72%);height:auto;max-height:120px;object-fit:contain;margin:0 auto 18px;border-radius:0;background:transparent;box-shadow:none}.auth-header{text-align:center;margin-bottom:21px}.auth-header h2{margin:0 0 6px;font-size:1.6rem;letter-spacing:-.04em}.auth-header p{margin:0;color:var(--a-muted);font-size:.85rem}
     .form-group,.otp-container{margin-bottom:14px}.form-label{display:block;margin:0 0 6px;font-size:.8rem;font-weight:750}.form-control{width:100%;height:46px;padding:0 12px;border:1.5px solid var(--a-border);border-radius:12px;background:var(--a-card);color:var(--a-text);font:500 16px Inter,system-ui;outline:0;transition:.18s}.form-control:focus,.otp-box:focus{border-color:var(--a-primary);box-shadow:0 0 0 4px rgba(99,102,241,.12);outline:0}.form-control::placeholder{color:#9ca3af}.input-group{display:flex}.input-group .form-control{border-radius:12px 0 0 12px}.input-group .btn{width:48px;border:1.5px solid var(--a-border);border-left:0;border-radius:0 12px 12px 0;background:var(--a-card);color:#64748b;cursor:pointer;font-size:1rem}
     .otp-inputs{display:flex;justify-content:center;gap:7px;margin:7px 0 10px}.otp-box{width:44px;height:46px;border:1.5px solid var(--a-border);border-radius:11px;background:var(--a-card);color:var(--a-text);text-align:center;font:800 1.1rem Inter,system-ui}.btn-send-otp{width:100%;height:43px;border:1px solid var(--a-border);border-radius:12px;background:var(--a-soft);color:#475569;font:750 .82rem Inter,system-ui;cursor:pointer;transition:.18s}.btn-send-otp:hover:not(:disabled){border-color:#c7d2fe;background:#eef2ff;color:#4f46e5}.btn-send-otp:disabled{opacity:.6;cursor:not-allowed}
     .btn-signup{width:100%;height:47px;border:0;border-radius:13px;background:linear-gradient(135deg,var(--a-primary),var(--a-primary2));color:#fff;font:800 .88rem Inter,system-ui;cursor:pointer;box-shadow:0 10px 24px rgba(99,102,241,.22);transition:.18s}.btn-signup:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 14px 28px rgba(99,102,241,.28)}.btn-signup:disabled{opacity:.65;cursor:not-allowed}
@@ -24,8 +24,8 @@
   <main class="auth-container">
     <section class="auth-card" aria-labelledby="signupTitle">
       <div class="auth-card-body">
-        <div class="auth-brand" aria-hidden="true">B</div>
-        <header class="auth-header"><h2 id="signupTitle">Create your account</h2><p>Join Blogify and start sharing your ideas.</p></header>
+        <img class="auth-brand" src="/imgs/8e816e65-0bc5-4a45-9e93-b2c056ff41aa.png" alt="Goan Craving food delivery logo">
+        <header class="auth-header"><h2 id="signupTitle">Create your account</h2><p>Create an account to order your favourite Goan food.</p></header>
         <a href="/user/auth/google" class="btn-google"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">Continue with Google</a>
         <div class="divider"><span>OR</span></div>
         <form id="signupForm" novalidate>
