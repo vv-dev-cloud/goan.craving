@@ -34,7 +34,7 @@ router.post("/checkout", requireUser, async (req, res) => {
     }
     const paymentMethod = String(req.body.paymentMethod || "");
     if (!["cod","upi","card"].includes(paymentMethod)) return res.status(400).send("Select a valid payment method.");
-    const orderItems = items.map(i => ({ product: i.product._id, name: i.product.name, imageURL: i.product.imageURL, unitPrice: i.product.price, quantity: i.quantity }));
+    const orderItems = items.map(i => ({ product: i.product._id, seller: i.product.seller || null, sellerName: i.product.sellerName || "", name: i.product.name, imageURL: i.product.imageURL, unitPrice: i.product.price, quantity: i.quantity }));
     const total = orderItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
     const order = await FoodOrder.create({ user: req.user._id, items: orderItems, deliveryAddress: address, paymentMethod, paymentStatus: "pending", total });
     cart.items = [];
