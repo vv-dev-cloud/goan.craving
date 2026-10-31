@@ -22,24 +22,6 @@
           <span>Add Blog</span>
         </a>
 
-        <!-- Messages -->
-        <a
-          href="/messages/chatlog"
-          class="nav-icon-btn"
-          aria-label="Messages"
-          title="Messages"
-        >
-          <i class="far fa-comment-dots"></i>
-
-          <span
-            class="nav-badge"
-            id="messageBadge"
-            style="display:none"
-          >
-            <span id="messageCount">0</span>
-          </span>
-        </a>
-
         <!-- Notifications -->
         <a
           href="/notifications"
@@ -128,28 +110,6 @@
               </span>
 
               <span>Profile</span>
-            </a>
-
-
-            <!-- Messages -->
-            <a
-              href="/messages/chatlog"
-              class="profile-item"
-              role="menuitem"
-            >
-              <span class="menu-icon message-icon">
-                <i class="fas fa-comment-dots"></i>
-              </span>
-
-              <span>Messages</span>
-
-              <b
-                id="dropdownMessageCount"
-                class="dropdown-count"
-                style="display:none"
-              >
-                0
-              </b>
             </a>
 
 
@@ -280,6 +240,7 @@
   <nav class="gc-drawer-links">
     <a href="/#how-it-works"><span class="gc-drawer-icon">✦</span><span>How it works</span><span class="gc-drawer-arrow">›</span></a>
     <a href="/user/profile/settings"><span class="gc-drawer-icon">⚙</span><span>Settings</span><span class="gc-drawer-arrow">›</span></a>
+    <a href="/messages/chatlog"><span class="gc-drawer-icon">💬</span><span>Chat with Support</span><span class="gc-drawer-arrow">›</span></a>
     <a href="/cart"><span class="gc-drawer-icon">🛒</span><span>Cart</span><span class="gc-drawer-arrow">›</span></a>
     <a href="/orders"><span class="gc-drawer-icon">▤</span><span>My Orders</span><span class="gc-drawer-arrow">›</span></a>
     <% if (locals.user) { %><a href="/user/profile"><span class="gc-drawer-icon">♙</span><span>Account</span><span class="gc-drawer-arrow">›</span></a><% } else { %><a href="/user/signin"><span class="gc-drawer-icon">♙</span><span>Sign in / Account</span><span class="gc-drawer-arrow">›</span></a><% } %>
