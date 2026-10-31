@@ -7,6 +7,11 @@ const OrderSchema = new Schema({
   paymentMethod: { type: String, enum: ["cod", "upi", "card"], required: true },
   paymentStatus: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
   orderStatus: { type: String, enum: ["placed", "confirmed", "preparing", "out_for_delivery", "delivered", "cancelled"], default: "placed" },
-  total: { type: Number, required: true, min: 0 },\n  refundStatus: { type: String, enum: ["none", "requested", "processing", "completed", "rejected"], default: "none" },\n  refundRequestedAt: { type: Date, default: null },\n  refundProcessedAt: { type: Date, default: null },\n  refundAmount: { type: Number, min: 0, default: 0 },\n  refundNote: { type: String, maxlength: 500, default: "" }
+  total: { type: Number, required: true, min: 0 },
+  refundStatus: { type: String, enum: ["none", "requested", "processing", "completed", "rejected"], default: "none" },
+  refundRequestedAt: { type: Date, default: null },
+  refundProcessedAt: { type: Date, default: null },
+  refundAmount: { type: Number, min: 0, default: 0 },
+  refundNote: { type: String, maxlength: 500, default: "" }
 }, { timestamps: true });
 module.exports = mongoose.models.FoodOrder || model("FoodOrder", OrderSchema);
