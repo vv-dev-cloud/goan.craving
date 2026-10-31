@@ -42,9 +42,12 @@ router.post("/checkout", requireUser, async (req, res) => {
     const orderItems = items.map(i => ({ product: i.product._id, seller: i.product.seller || null, sellerName: i.product.sellerName || "", name: i.product.name, imageURL: i.product.imageURL, unitPrice: i.product.price, quantity: i.quantity }));
     const total = orderItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
     const order = await FoodOrder.create({ user: req.user._id, items: orderItems, deliveryAddress: address, paymentMethod, paymentStatus: "pending", total });
+    // Stable customer-facing order number shared with the operations dashboard.
+    order.orderNumber = "GC-" + String(order._id).slice(-8).toUpperCase();
+    await order.save();
     cart.items = [];
     await cart.save();
-    await NotificationService.createNotification(req.user._id, "order_placed", { title: "Order received", message: "Your order with " + order.items.length + " item(s) has been placed. We will keep you updated.", order: order._id, url: "/orders/" + order._id, pushTitle: "Goan Craving · Order received", pushMessage: "Your order #" + String(order._id).slice(-6) + " has been placed." });
+    await NotificationService.createNotification(req.user._id, "order_placed", { title: "Order received", message: "Your order with " + order.items.length + " item(s) has been placed. We will keep you updated.", order: order._id, url: "/orders/" + order._id, pushTitle: "Goan Craving · Order received", pushMessage: "Your order #" + order.orderNumber + " has been placed." });
     return res.redirect("/orders/" + order._id);
   } catch (e) { console.error("Place order:", e); res.status(500).send("Unable to place your order."); }
 });
