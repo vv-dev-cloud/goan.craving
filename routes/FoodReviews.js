@@ -38,6 +38,10 @@ router.post("/orders/:orderId/products/:productId", restrictToLoggedInUserOnly, 
         if (description.length > 1200) {
             return res.status(400).json({ success: false, message: "Review description must be 1,200 characters or fewer." });
         }
+        const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+        if ((req.files || []).some(file => !allowedImageTypes.has(file.mimetype))) {
+            return res.status(400).json({ success: false, message: "Use JPG, PNG, WebP or GIF food photos." });
+        }
         if ((req.files || []).length > 5) {
             return res.status(400).json({ success: false, message: "You can upload up to 5 food photos." });
         }
