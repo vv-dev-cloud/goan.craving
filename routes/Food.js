@@ -64,6 +64,12 @@ router.get("/products/:id", async (req, res) => {
   } catch (error) { console.error("Food details:", error); res.status(500).send("Unable to load this food item."); }
 });
 
+router.get("/checkout", async (req, res) => {
+  const cart = await loadCart(req);
+  if (!cart.items.length) return res.redirect("/cart");
+  res.render("food/checkout-placeholder", { title: "Checkout | Goan Craving", user: req.user || null, total: cart.total, count: cart.count });
+});
+
 router.get("/cart", async (req, res) => {
   try {
     const cart = await loadCart(req);
