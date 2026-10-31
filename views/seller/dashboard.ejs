@@ -1,8 +1,98 @@
-<!doctype html><html lang="en"><head><%- include("../partials/head") %><title>Seller Dashboard | Goan Craving</title>
-<style>
-.seller-page{max-width:1200px;margin:100px auto 60px;padding:20px}.seller-top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.seller-top h1{color:#17552b;margin:0}.seller-action{background:#f36b35;color:#fff;text-decoration:none;padding:12px 17px;border-radius:12px;font-weight:800}.seller-products{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px;margin-top:25px}.seller-product{border:1px solid #eadfce;border-radius:18px;overflow:hidden;background:#fff}.seller-product img{width:100%;height:170px;object-fit:cover;background:#f7eee3}.seller-product-info{padding:15px}.seller-product-info h3{margin:0 0 6px}.seller-muted{color:#71685d;font-size:.9rem}.seller-delete{border:1px solid #e8c7bd;background:#fff7f4;color:#a33a23;padding:8px 11px;border-radius:9px;cursor:pointer}@media(max-width:600px){.seller-page{padding:12px}.seller-product img{height:200px}}
-</style></head><body><%- include("../partials/nave") %><main class="seller-page">
-<div class="seller-top"><div><p class="seller-muted">Seller workspace</p><h1>Welcome, <%= user.sellerProfile.showName %></h1><p class="seller-muted">Manage your food listings in one place.</p></div><a class="seller-action" href="/seller/products/new">＋ Add food</a></div>
-<% if(!products.length){ %><section style="margin-top:25px;padding:35px;border:1px dashed #dfcfba;border-radius:18px;text-align:center"><h2>Your menu starts here</h2><p class="seller-muted">Add a food photo, description and price to publish your first item.</p><a class="seller-action" href="/seller/products/new">Add your first food</a></section><% }else{ %>
-<div class="seller-products"><% products.forEach(product=>{ %><article class="seller-product"><img src="<%= product.imageURL || '/imgs/default.png' %>" alt="<%= product.name %>" loading="lazy" onerror="this.src='/imgs/default.png'"><div class="seller-product-info"><h3><%= product.name %></h3><p class="seller-muted"><%= product.category %> · ₹<%= Number(product.price).toFixed(2) %></p><p class="seller-muted"><%= product.isAvailable?'Available':'Unavailable' %></p><form method="post" action="/seller/products/<%= product._id %>/delete" onsubmit="return confirm('Delete this food listing?')"><button class="seller-delete" type="submit">Delete listing</button></form></div></article><% }) %></div><% } %>
-</main><%- include("../partials/scripts") %></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <%- include("../partials/head") %>
+  <title>Seller Dashboard | Goan Craving</title>
+  <style>
+    :root{--seller-green:#174b2b;--seller-orange:#ef7138;--seller-cream:#f7f8f3;--seller-ink:#243329;--seller-muted:#788078}
+    body{background:var(--seller-cream)}
+    .seller-shell{max-width:1440px;margin:92px auto 48px;padding:20px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px;color:var(--seller-ink)}
+    .seller-sidebar{background:var(--seller-green);color:#fff;border-radius:22px;padding:25px 16px;align-self:stretch;min-height:620px}
+    .seller-brand{font-size:1.2rem;font-weight:900;letter-spacing:.2px;padding:5px 12px 26px}
+    .seller-side-label{font-size:.72rem;text-transform:uppercase;letter-spacing:1.4px;color:#b9d1bf;padding:12px}
+    .seller-nav{display:flex;align-items:center;gap:12px;color:#e6f0e8;text-decoration:none;padding:13px 14px;border-radius:12px;margin:4px 0;font-weight:650}
+    .seller-nav.active,.seller-nav:hover{background:#ffffff1c;color:#fff}
+    .seller-main{min-width:0}
+    .seller-heading{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;margin:4px 0 23px}
+    .seller-eyebrow{font-size:.82rem;color:var(--seller-muted);margin:0 0 7px}
+    .seller-heading h1{font-size:clamp(1.6rem,3vw,2.25rem);margin:0;color:var(--seller-green);letter-spacing:-.6px}
+    .seller-subtitle{color:var(--seller-muted);margin:9px 0 0}
+    .seller-action{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--seller-orange);color:#fff;text-decoration:none;padding:13px 19px;border-radius:12px;font-weight:800;box-shadow:0 5px 14px #ef71382b}
+    .seller-welcome{background:linear-gradient(110deg,#e4f0df,#f2f7ec);border:1px solid #dce8d6;border-radius:20px;padding:24px 27px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;gap:15px}
+    .seller-welcome h2{margin:0;color:var(--seller-green);font-size:1.35rem}
+    .seller-welcome p{margin:8px 0 0;color:#667567}
+    .seller-welcome-mark{font-size:2.4rem}
+    .seller-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:25px}
+    .seller-stat{background:#fff;border:1px solid #e9ece4;border-radius:17px;padding:19px}
+    .seller-stat-top{display:flex;justify-content:space-between;align-items:center;color:var(--seller-muted);font-size:.9rem}
+    .seller-stat-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#edf5e9;color:var(--seller-green);font-size:1.2rem}
+    .seller-stat strong{display:block;font-size:1.8rem;margin-top:12px;color:var(--seller-ink)}
+    .seller-stat small{display:block;color:var(--seller-muted);margin-top:5px}
+    .seller-panel{background:#fff;border:1px solid #e9ece4;border-radius:20px;overflow:hidden}
+    .seller-panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:21px 23px;border-bottom:1px solid #edf0e9;flex-wrap:wrap}
+    .seller-panel-head h2{margin:0;font-size:1.13rem;color:var(--seller-green)}
+    .seller-panel-head p{margin:5px 0 0;color:var(--seller-muted);font-size:.88rem}
+    .seller-count{background:#edf5e9;color:var(--seller-green);font-weight:800;font-size:.8rem;padding:7px 11px;border-radius:20px}
+    .seller-empty{padding:45px 20px;text-align:center}
+    .seller-empty-icon{font-size:2.5rem}
+    .seller-empty h3{margin:12px 0 7px;color:var(--seller-green)}
+    .seller-empty p{color:var(--seller-muted);margin:0 auto 20px;max-width:420px}
+    .seller-table-wrap{overflow-x:auto}
+    .seller-table{width:100%;border-collapse:collapse;min-width:580px}
+    .seller-table th{text-align:left;padding:14px 20px;color:#899188;font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;background:#fbfcf9}
+    .seller-table td{padding:15px 20px;border-top:1px solid #f0f2ed;vertical-align:middle}
+    .seller-food{display:flex;align-items:center;gap:13px;min-width:210px}
+    .seller-food img{width:58px;height:58px;object-fit:cover;border-radius:12px;background:#f2eee7}
+    .seller-food strong{display:block;color:var(--seller-ink)}
+    .seller-food small{display:block;color:var(--seller-muted);margin-top:4px}
+    .seller-price{font-weight:800;white-space:nowrap}
+    .seller-status{display:inline-block;background:#e8f5e9;color:#27733c;padding:6px 10px;border-radius:20px;font-size:.78rem;font-weight:800;white-space:nowrap}
+    .seller-status.off{background:#f1f2ef;color:#747b72}
+    .seller-delete{border:1px solid #f0d4cc;background:#fff8f5;color:#ad442c;padding:8px 12px;border-radius:9px;font-weight:700;cursor:pointer}
+    @media(max-width:900px){.seller-shell{grid-template-columns:1fr;margin-top:84px}.seller-sidebar{min-height:auto;padding:15px}.seller-brand{padding:4px 10px 12px}.seller-side-label{display:none}.seller-side-links{display:flex;gap:5px;flex-wrap:wrap}.seller-nav{padding:10px 12px}.seller-stats{gap:10px}}
+    @media(max-width:580px){.seller-shell{padding:12px;margin-bottom:25px}.seller-stats{grid-template-columns:1fr}.seller-stat{padding:15px}.seller-welcome{padding:20px}.seller-welcome-mark{display:none}.seller-panel-head{padding:17px}.seller-action{width:100%}.seller-heading{align-items:stretch}.seller-heading>div{width:100%}}
+  </style>
+</head>
+<body>
+  <%- include("../partials/nave") %>
+  <main class="seller-shell">
+    <aside class="seller-sidebar">
+      <div class="seller-brand">🍃 Goan Craving</div>
+      <div class="seller-side-label">Seller workspace</div>
+      <nav class="seller-side-links" aria-label="Seller navigation">
+        <a class="seller-nav active" href="/seller/dashboard">▦ Dashboard</a>
+        <a class="seller-nav" href="#menu">☷ My food menu</a>
+        <a class="seller-nav" href="/seller/products/new">＋ Add food item</a>
+      </nav>
+    </aside>
+    <section class="seller-main">
+      <header class="seller-heading">
+        <div><p class="seller-eyebrow">SELLER DASHBOARD</p><h1>Welcome back, <%= user.sellerProfile.showName %>!</h1><p class="seller-subtitle">Here’s what’s happening with your food menu.</p></div>
+        <a class="seller-action" href="/seller/products/new">＋ Add food item</a>
+      </header>
+      <section class="seller-welcome">
+        <div><h2>Your kitchen, your business 🌿</h2><p>Keep your menu fresh and let customers discover your Goan flavours.</p></div>
+        <div class="seller-welcome-mark" aria-hidden="true">🥘</div>
+      </section>
+      <section class="seller-stats" aria-label="Menu overview">
+        <article class="seller-stat"><div class="seller-stat-top"><span>Total menu items</span><span class="seller-stat-icon">☷</span></div><strong><%= products.length %></strong><small>Food listings in your menu</small></article>
+        <article class="seller-stat"><div class="seller-stat-top"><span>Available now</span><span class="seller-stat-icon">✓</span></div><strong><%= products.filter(p=>p.isAvailable).length %></strong><small>Items marked available</small></article>
+        <article class="seller-stat"><div class="seller-stat-top"><span>Unavailable</span><span class="seller-stat-icon">◷</span></div><strong><%= products.filter(p=>!p.isAvailable).length %></strong><small>Items not currently available</small></article>
+      </section>
+      <section class="seller-panel" id="menu">
+        <div class="seller-panel-head"><div><h2>My food menu</h2><p>Manage the items listed by your kitchen.</p></div><span class="seller-count"><%= products.length %> items</span></div>
+        <% if(!products.length){ %>
+          <div class="seller-empty"><div class="seller-empty-icon">🍽️</div><h3>Your menu starts here</h3><p>Add a food photo, description and price to publish your first item.</p><a class="seller-action" href="/seller/products/new">＋ Add your first food</a></div>
+        <% }else{ %>
+          <div class="seller-table-wrap"><table class="seller-table"><thead><tr><th>Food item</th><th>Price</th><th>Status</th><th>Action</th></tr></thead><tbody>
+          <% products.forEach(product=>{ %>
+            <tr><td><div class="seller-food"><img src="<%= product.imageURL || '/imgs/default.png' %>" alt="<%= product.name %>" loading="lazy" onerror="this.src='/imgs/default.png'"><div><strong><%= product.name %></strong><small><%= product.category %></small></div></div></td><td class="seller-price">₹<%= Number(product.price).toFixed(2) %></td><td><span class="seller-status <%= product.isAvailable?'':'off' %>"><%= product.isAvailable?'● Available':'● Unavailable' %></span></td><td><form method="post" action="/seller/products/<%= product._id %>/delete" onsubmit="return confirm('Delete this food listing?')"><button class="seller-delete" type="submit">Delete</button></form></td></tr>
+          <% }) %>
+          </tbody></table></div>
+        <% } %>
+      </section>
+    </section>
+  </main>
+  <%- include("../partials/scripts") %>
+</body>
+</html>
