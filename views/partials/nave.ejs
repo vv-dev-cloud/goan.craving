@@ -1,5 +1,6 @@
 <nav class="main-nav" id="mainNav">
   <div class="nav-container">
+    <button class="gc-menu-toggle" id="gcMenuToggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="gcSideDrawer"><span></span><span></span><span></span></button>
 
     <!-- Brand -->
     <a href="/" class="nav-brand" aria-label="Goan Craving home">
@@ -273,9 +274,42 @@
 
   </div>
 </nav>
-
+<div class="gc-drawer-backdrop" id="gcDrawerBackdrop" hidden></div>
+<aside class="gc-side-drawer" id="gcSideDrawer" aria-hidden="true" aria-label="Main navigation">
+  <div class="gc-drawer-head"><img src="/imgs/8e816e65-0bc5-4a45-9e93-b2c056ff41aa.png" alt="Goan Craving"><button type="button" id="gcDrawerClose" aria-label="Close navigation menu">×</button></div>
+  <nav class="gc-drawer-links">
+    <a href="/#how-it-works"><span class="gc-drawer-icon">✦</span><span>How it works</span><span class="gc-drawer-arrow">›</span></a>
+    <a href="/user/profile/settings"><span class="gc-drawer-icon">⚙</span><span>Settings</span><span class="gc-drawer-arrow">›</span></a>
+    <a href="/cart"><span class="gc-drawer-icon">🛒</span><span>Cart</span><span class="gc-drawer-arrow">›</span></a>
+    <a href="/orders"><span class="gc-drawer-icon">▤</span><span>My Orders</span><span class="gc-drawer-arrow">›</span></a>
+    <% if (locals.user) { %><a href="/user/profile"><span class="gc-drawer-icon">♙</span><span>Account</span><span class="gc-drawer-arrow">›</span></a><% } else { %><a href="/user/signin"><span class="gc-drawer-icon">♙</span><span>Sign in / Account</span><span class="gc-drawer-arrow">›</span></a><% } %>
+  </nav>
+  <div class="gc-drawer-footer">A taste of Goa, delivered with love.</div>
+</aside>
 
 <style>
+
+/* Goan Craving slide-out navigation */
+.gc-menu-toggle{width:42px;height:42px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;border:1px solid #eee4d8;background:#fff;border-radius:12px;cursor:pointer;flex-shrink:0}
+.gc-menu-toggle span{display:block;width:19px;height:2px;border-radius:2px;background:#286b4b;transition:transform .2s,opacity .2s}
+.gc-menu-toggle[aria-expanded="true"] span:first-child{transform:translateY(7px) rotate(45deg)}
+.gc-menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
+.gc-menu-toggle[aria-expanded="true"] span:last-child{transform:translateY(-7px) rotate(-45deg)}
+.gc-drawer-backdrop{position:fixed;inset:0;background:rgba(28,25,21,.42);z-index:1198;opacity:0;transition:opacity .25s}
+.gc-drawer-backdrop.is-visible{opacity:1}
+.gc-side-drawer{position:fixed;z-index:1199;top:0;bottom:0;left:0;width:min(330px,86vw);padding:20px 18px 18px;background:#fffaf5;box-shadow:18px 0 45px rgba(30,20,10,.16);transform:translateX(-105%);transition:transform .28s cubic-bezier(.2,.75,.25,1);display:flex;flex-direction:column;overflow-y:auto}
+.gc-side-drawer.is-open{transform:translateX(0)}
+.gc-drawer-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:20px;border-bottom:1px solid #eee4d8}
+.gc-drawer-head img{width:190px;max-width:70%;height:auto;object-fit:contain}
+.gc-drawer-head button{width:38px;height:38px;border:0;border-radius:50%;background:#f4e9dc;color:#34291f;font-size:28px;line-height:1;cursor:pointer}
+.gc-drawer-links{display:grid;gap:7px;padding-top:18px}
+.gc-drawer-links a{display:flex;align-items:center;gap:13px;padding:14px 12px;border-radius:13px;text-decoration:none;color:#302820;font-weight:750;transition:background .15s}
+.gc-drawer-links a:hover,.gc-drawer-links a:focus-visible{background:#f3e8da;outline:none}
+.gc-drawer-icon{width:35px;height:35px;display:grid;place-items:center;border-radius:11px;background:#eaf2eb;color:#286b4b;font-size:1rem}
+.gc-drawer-arrow{margin-left:auto;font-size:1.5rem;font-weight:400;color:#9a8b7b}
+.gc-drawer-footer{margin-top:auto;padding:22px 10px 4px;color:#8c7b6b;font-size:.78rem}
+body.gc-drawer-lock{overflow:hidden}
+@media(prefers-reduced-motion:reduce){.gc-side-drawer,.gc-drawer-backdrop,.gc-menu-toggle span{transition:none}}
 
 /* =========================================================
    BLOGIFY NAVIGATION
@@ -1251,6 +1285,16 @@ html[data-theme="dark"] .nav-badge {
 
 </style>
 
+<script>
+(function(){
+ const t=document.getElementById('gcMenuToggle'),d=document.getElementById('gcSideDrawer'),b=document.getElementById('gcDrawerBackdrop'),x=document.getElementById('gcDrawerClose');
+ if(!t||!d||!b||!x)return;
+ function open(){d.classList.add('is-open');b.hidden=false;requestAnimationFrame(()=>b.classList.add('is-visible'));d.setAttribute('aria-hidden','false');t.setAttribute('aria-expanded','true');t.setAttribute('aria-label','Close navigation menu');document.body.classList.add('gc-drawer-lock');x.focus();}
+ function close(){d.classList.remove('is-open');b.classList.remove('is-visible');d.setAttribute('aria-hidden','true');t.setAttribute('aria-expanded','false');t.setAttribute('aria-label','Open navigation menu');document.body.classList.remove('gc-drawer-lock');setTimeout(()=>{if(!d.classList.contains('is-open'))b.hidden=true;},280);t.focus();}
+ t.addEventListener('click',()=>d.classList.contains('is-open')?close():open());x.addEventListener('click',close);b.addEventListener('click',close);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&d.classList.contains('is-open'))close();});
+ d.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{d.classList.remove('is-open');b.classList.remove('is-visible');d.setAttribute('aria-hidden','true');t.setAttribute('aria-expanded','false');document.body.classList.remove('gc-drawer-lock');setTimeout(()=>b.hidden=true,280);}));
+})();
+</script>
 
 <script>
 
