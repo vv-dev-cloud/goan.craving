@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><head><%- include("../partials/head") %><title>Add Food | Goan Craving</title>
+<style>
+.food-form-wrap{max-width:760px;margin:100px auto 60px;padding:18px}.food-form-card{background:#fff;border:1px solid #eadfce;border-radius:22px;padding:clamp(20px,4vw,34px)}.food-form-card h1{color:#17552b}.food-field{margin:17px 0}.food-field label{display:block;font-weight:750;margin-bottom:7px}.food-field input,.food-field textarea,.food-field select{width:100%;padding:12px;border:1px solid #e5d8c7;border-radius:11px;font:inherit}.food-field textarea{min-height:110px}.food-submit{background:#f36b35;color:white;border:0;padding:13px 18px;border-radius:11px;font-weight:800}.food-error{background:#fff0ed;color:#a32c1b;padding:12px;border-radius:10px}
+</style></head><body><%- include("../partials/nave") %><main class="food-form-wrap"><section class="food-form-card"><h1>Publish food</h1><p>Add a delicious item to the Goan Craving menu.</p><% if(error){ %><div class="food-error" role="alert"><%= error %></div><% } %>
+<form method="post" action="/seller/products" enctype="multipart/form-data">
+<div class="food-field"><label for="name">Food name</label><input id="name" name="name" maxlength="120" required value="<%= product?.name || '' %>"></div>
+<div class="food-field"><label for="description">Description</label><textarea id="description" name="description" maxlength="2000"><%= product?.description || '' %></textarea></div>
+<div class="food-field"><label for="price">Price (₹)</label><input id="price" type="number" name="price" min="0.01" step="0.01" required value="<%= product?.price || '' %>"></div>
+<div class="food-field"><label for="category">Category</label><select id="category" name="category"><% ['Goan classics','Coastal favourites','Hearty meals','Sweet cravings','Drinks','Other'].forEach(category=>{ %><option value="<%= category %>" <%= product?.category===category?'selected':'' %>><%= category %></option><% }) %></select></div>
+<div class="food-field"><label for="foodImage">Food photo</label><input id="foodImage" type="file" name="foodImage" accept="image/*"><small>Upload an image, or paste an image URL below.</small></div>
+<div class="food-field"><label for="imageURL">Image URL (optional)</label><input id="imageURL" type="url" name="imageURL" placeholder="https://..." value="<%= product?.imageURL || '' %>"></div>
+<div class="food-field"><label><input type="checkbox" name="isAvailable" checked> Available for customers</label></div>
+<button class="food-submit" type="submit">Publish food</button> <a href="/seller/dashboard">Cancel</a></form></section></main><%- include("../partials/scripts") %></body></html>
