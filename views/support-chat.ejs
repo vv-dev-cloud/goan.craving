@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <%- include('./partials/head') %>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Order Support | Goan Craving</title>
+  <style>
+    :root{--green:#16794b;--bg:#f5f7f5;--line:#e2e8e4;--ink:#17221b;--muted:#68756c}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .support{max-width:720px;margin:28px auto;padding:0 14px}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 30px #1c3d2610}
+    .head{padding:18px 20px;background:var(--green);color:white}.head h1{font-size:21px;margin:0}.head p{margin:5px 0 0;font-size:13px;opacity:.9}
+    #thread{min-height:260px;max-height:58vh;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+    .bubble{max-width:88%;padding:12px 14px;border-radius:15px;background:#f0f4f1;line-height:1.45;font-size:14px;white-space:pre-wrap}.bubble.user{align-self:flex-end;background:#e0f3e8}.bubble.agent{align-self:flex-start}
+    .actions{padding:0 18px 18px;display:grid;grid-template-columns:1fr 1fr;gap:9px}.quick{background:white;border:1px solid #cddbd1;border-radius:12px;padding:12px 13px;text-align:left;color:#184a30;font-weight:650;cursor:pointer}.quick:hover{background:#eff8f2}.quick:last-child{grid-column:1/-1}
+    .order{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;background:#fff}.order strong{display:block}.order small{color:var(--muted);display:block;margin:4px 0 8px}.order button,.confirm{border:0;border-radius:9px;padding:9px 12px;background:var(--green);color:#fff;font-weight:700;cursor:pointer}.order button:disabled{opacity:.5}
+    .composer{border-top:1px solid var(--line);padding:12px;display:flex;gap:8px}.composer input{min-width:0;flex:1;border:1px solid #d4ded7;border-radius:12px;padding:12px;font:inherit}.composer button{border:0;border-radius:12px;padding:0 16px;background:var(--green);color:white;font-weight:700}
+    .note{font-size:11px;color:var(--muted);padding:0 18px 14px}.confirm-row{display:flex;gap:8px;margin-top:9px}.secondary{background:#e9eeeb!important;color:#26372b!important}
+    @media(max-width:600px){.support{margin:10px auto;padding:0 8px}.panel{border-radius:14px}#thread{max-height:54vh}.actions{grid-template-columns:1fr}.quick:last-child{grid-column:auto}}
+  </style>
+</head>
+<body>
+  <%- include('./partials/nave') %>
+  <main class="support"><section class="panel">
+    <header class="head"><h1>Goan Craving Order Support</h1><p>Help with your food orders, delivery, and cancellations.</p></header>
+    <div id="thread" aria-live="polite"><div class="bubble agent">Hi! What can I help you with today?</div></div>
+    <div class="actions" id="quickActions">
+      <button class="quick" data-action="status">Where is my order?</button>
+      <button class="quick" data-action="cancel">I want to cancel my order</button>
+      <button class="quick" data-action="delivery">When will my order arrive?</button>
+      <button class="quick" data-action="other">Something else</button>
+    </div>
+    <form class="composer" id="composer"><input id="message" maxlength="1200" placeholder="Ask the support agent…" autocomplete="off" aria-label="Message support"><button type="submit">Send</button></form>
+    <div class="note">Order information is shown only for your signed-in account. Cancellation requires confirmation.</div>
+  </section></main>
+<script>
+(()=>{const thread=document.getElementById('thread'),input=document.getElementById('message'),form=document.getElementById('composer');let awaitingOther=false;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function bubble(text,who='agent',html=false){const el=document.createElement('div');el.className='bubble '+who;if(html)el.innerHTML=text;else el.textContent=text;thread.appendChild(el);thread.scrollTop=thread.scrollHeight;return el}
+async function request(path,body){const r=await fetch('/api/support-agent'+path,{method:body?'POST':'GET',credentials:'same-origin',headers:{Accept:'application/json',...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const d=await r.json();if(!r.ok||!d.success)throw Error(d.message||'Support request failed');return d}
+function showOrders(orders,cancel=false){if(!orders?.length)return;orders.forEach(o=>{const el=bubble('', 'agent');el.innerHTML='<div class="order"><strong>Order #'+esc(o.reference)+'</strong><small>'+esc(o.items.map(i=>i.name+' × '+i.quantity).join(', '))+'<br>Status: '+esc(o.status.replace(/_/g,' '))+'</small>'+(cancel&&['placed','confirmed'].includes(o.status)?'<button data-cancel="'+esc(o.id)+'">Request cancellation</button>':'')+'</div>';const b=el.querySelector('[data-cancel]');if(b)b.onclick=()=>confirmCancel(o);});}
+async function quick(action){try{if(action==='other'){awaitingOther=true;bubble('Would you like to chat with our AI support agent?');const el=bubble('<button class="quick" data-yes>Yes, chat with agent</button> <button class="quick secondary" data-no>No, back to options</button>','agent',true);el.querySelector('[data-yes]').onclick=()=>{awaitingOther=false;document.getElementById('quickActions').hidden=true;bubble('Sure—tell me what you need help with.');input.focus()};el.querySelector('[data-no]').onclick=()=>{awaitingOther=false;bubble('No problem. Choose a support option whenever you need.');document.getElementById('quickActions').hidden=false};return;}
+const msg=action==='status'?'Where is my order?':action==='cancel'?'I want to cancel my order':'When will my order arrive?';bubble(msg,'user');const d=await request('/message',{message:msg});bubble(d.reply);showOrders(d.orders,action==='cancel');}catch(e){bubble(e.message)}}
+async function sendMessage(message){const msg=String(message||'').trim();if(!msg)return;bubble(msg,'user');try{const d=await request('/message',{message:msg});bubble(d.reply);showOrders(d.orders,d.action==='select-cancel-order')}catch(e){bubble(e.message)}}
+async function confirmCancel(order){const el=bubble('Cancel order #'+order.reference+'? This cannot be undone.');const row=document.createElement('div');row.className='confirm-row';row.innerHTML='<button class="confirm">Confirm cancellation</button><button class="confirm secondary">Keep order</button>';el.appendChild(row);row.children[1].onclick=()=>{row.remove();bubble('Okay, your order will remain active.')};row.children[0].onclick=async()=>{row.children[0].disabled=true;try{const d=await request('/cancel/'+encodeURIComponent(order.id),{});bubble(d.message);row.remove()}catch(e){bubble(e.message);row.children[0].disabled=false}}}
+document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>quick(b.dataset.action));form.onsubmit=e=>{e.preventDefault();const msg=input.value;input.value='';sendMessage(msg)};})();
+</script>
+</body></html>
