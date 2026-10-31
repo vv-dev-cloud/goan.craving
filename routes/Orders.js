@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const FoodCart = require("../models/FoodCart");
 const FoodOrder = require("../models/FoodOrder");
+const Comment = require("../models/Comment");
 const CustomerAccount = require("../models/CustomerAccount");
 const NotificationService = require("../services/notificationService");
 const router = express.Router();
@@ -43,19 +44,36 @@ router.post("/checkout", requireUser, async (req, res) => {
     const order = await FoodOrder.create({ user: req.user._id, items: orderItems, deliveryAddress: address, paymentMethod, paymentStatus: "pending", total });
     cart.items = [];
     await cart.save();
-    await NotificationService.createNotification(req.user._id, "order_placed", { title: "Order received", message: `Your order with ${order.items.length} item(s) has been placed. We will keep you updated.`, order: order._id, url: `/orders/${order._id}`, pushTitle: "Goan Craving · Order received", pushMessage: `Your order #${String(order._id).slice(-6)} has been placed.` });
+    await NotificationService.createNotification(req.user._id, "order_placed", { title: "Order received", message: "Your order with " + order.items.length + " item(s) has been placed. We will keep you updated.", order: order._id, url: "/orders/" + order._id, pushTitle: "Goan Craving · Order received", pushMessage: "Your order #" + String(order._id).slice(-6) + " has been placed." });
     return res.redirect("/orders/" + order._id);
   } catch (e) { console.error("Place order:", e); res.status(500).send("Unable to place your order."); }
 });
 
 router.get("/orders", requireUser, async (req, res) => {
-  try { const orders = await FoodOrder.find({ user: req.user._id }).sort({ createdAt: -1 }).lean(); res.render("food/orders", { title: "My Orders | Goan Craving", user: req.user, orders }); }
-  catch (e) { console.error("Orders:", e); res.status(500).send("Unable to load orders."); }
+  try {
+    const orders = await FoodOrder.find({ user: req.user._id }).sort({ createdAt: -1 }).lean();
+    res.render("food/orders", { title: "My Orders | Goan Craving", user: req.user, orders });
+  } catch (e) { console.error("Orders:", e); res.status(500).send("Unable to load orders."); }
 });
+
 router.get("/orders/:id", requireUser, async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).send("Order not found.");
   const order = await FoodOrder.findOne({ _id: req.params.id, user: req.user._id }).lean();
   if (!order) return res.status(404).send("Order not found.");
-  res.render("food/order-details", { title: "Order details | Goan Craving", user: req.user, order });
+  const reviews = await Comment.find({
+    type: "food_review",
+    foodOrder: order._id,
+    author: req.user._id,
+    isDeleted: false
+  }).lean();
+  const reviewsByProduct = {};
+  for (const review of reviews) reviewsByProduct[String(review.foodProduct)] = review;
+  res.render("food/order-details", {
+    title: "Order details | Goan Craving",
+    user: req.user,
+    order,
+    reviewsByProduct,
+    reviewMessage: req.query.review || ""
+  });
 });
 module.exports = router;
