@@ -41,19 +41,43 @@ async function getOrCreateCart(req) {
 router.get("/search", async (req, res) => {
   try {
     await ensureStarterMenu();
-    const search = String(req.query.q || "").trim().slice(0, 100);
+    const clean = value => String(value || "").trim().slice(0, 100);
+    const escapeRegex = value => value.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");
+    const search = clean(req.query.q);
+    const category = clean(req.query.category);
+    const restaurant = clean(req.query.restaurant);
+    const sort = ["price-asc", "price-desc", "name-asc", "name-desc", "newest"].includes(req.query.sort) ? req.query.sort : "name-asc";
+    const minRaw = String(req.query.minPrice ?? "").trim();
+    const maxRaw = String(req.query.maxPrice ?? "").trim();
+    const minPrice = minRaw !== "" && Number.isFinite(Number(minRaw)) && Number(minRaw) >= 0 ? Number(minRaw) : null;
+    const maxPrice = maxRaw !== "" && Number.isFinite(Number(maxRaw)) && Number(maxRaw) >= 0 ? Number(maxRaw) : null;
     const query = { isAvailable: true };
-    if (search) query.$or = [
-      { name: { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } },
-      { category: { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } },
-      { description: { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } }
-    ];
-    const products = await FoodProduct.find(query).sort({ name: 1 }).limit(60).lean();
+    if (search) {
+      const term = new RegExp(escapeRegex(search), "i");
+      query.$or = [{ name: term }, { category: term }, { description: term }, { sellerName: term }];
+    }
+    if (category) query.category = category;
+    if (restaurant) query.sellerName = restaurant;
+    if (minPrice !== null || maxPrice !== null) {
+      query.price = {};
+      if (minPrice !== null) query.price.$gte = minPrice;
+      if (maxPrice !== null) query.price.$lte = maxPrice;
+    }
+    const sortMap = { "price-asc": { price: 1, name: 1 }, "price-desc": { price: -1, name: 1 }, "name-asc": { name: 1 }, "name-desc": { name: -1 }, newest: { createdAt: -1 } };
+    const [products, categories, restaurants] = await Promise.all([
+      FoodProduct.find(query).sort(sortMap[sort]).limit(100).lean(),
+      FoodProduct.distinct("category", { isAvailable: true }),
+      FoodProduct.distinct("sellerName", { isAvailable: true, sellerName: { $nin: ["", null] } })
+    ]);
     const cart = await loadCart(req);
-    res.render("food/search-results", { title: "Search food | Goan Craving", user: req.user || null, search, products, cartCount: cart.count });
+    res.render("food/search-results", {
+      title: "Search food | Goan Craving", user: req.user || null, search, products,
+      categories: categories.filter(Boolean).sort((a, b) => a.localeCompare(b)),
+      restaurants: restaurants.filter(Boolean).sort((a, b) => a.localeCompare(b)),
+      filters: { category, restaurant, minPrice: minRaw, maxPrice: maxRaw, sort }, cartCount: cart.count
+    });
   } catch (error) { console.error("Food search:", error); res.status(500).send("Unable to search food right now."); }
 });
-
 router.get("/products/:id", async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).send("Food item not found");
