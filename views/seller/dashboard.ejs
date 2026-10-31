@@ -62,6 +62,7 @@
       <nav class="seller-side-links" aria-label="Seller navigation">
         <a class="seller-nav active" href="/seller/dashboard">▦ Dashboard</a>
         <a class="seller-nav" href="#menu">☷ My food menu</a>
+        <a class="seller-nav" href="/seller/orders">▤ Orders & sales</a>
         <a class="seller-nav" href="/seller/products/new">＋ Add food item</a>
       </nav>
     </aside>
@@ -74,6 +75,12 @@
         <div><h2>Your kitchen, your business 🌿</h2><p>Keep your menu fresh and let customers discover your Goan flavours.</p></div>
         <div class="seller-welcome-mark" aria-hidden="true">🥘</div>
       </section>
+      <section class="seller-stats" aria-label="Sales overview">
+        <article class="seller-stat"><div class="seller-stat-top"><span>Total orders</span><span class="seller-stat-icon">▤</span></div><strong><%= sellerOrderCount %></strong><small>Orders containing your food</small></article>
+        <article class="seller-stat"><div class="seller-stat-top"><span>Units sold</span><span class="seller-stat-icon">✓</span></div><strong><%= unitsSold %></strong><small>Units excluding cancelled orders</small></article>
+        <article class="seller-stat"><div class="seller-stat-top"><span>Sales total</span><span class="seller-stat-icon">₹</span></div><strong>₹<%= Number(salesTotal).toFixed(2) %></strong><small>Item sales excluding cancelled orders</small></article>
+      </section>
+      <section class="seller-panel" style="margin-bottom:24px"><div class="seller-panel-head"><div><h2>Product performance</h2><p>Orders and sales by your listed food products.</p></div></div><div class="seller-table-wrap"><table class="seller-table"><thead><tr><th>Food product</th><th>Orders</th><th>Units sold</th><th>Sales total</th></tr></thead><tbody><% itemSales.forEach(item=>{ %><tr><td><strong><%= item.name %></strong></td><td><%= item.orders %></td><td><%= item.units %></td><td class="seller-price">₹<%= Number(item.total).toFixed(2) %></td></tr><% }) %></tbody></table></div></section>
       <section class="seller-stats" aria-label="Menu overview">
         <article class="seller-stat"><div class="seller-stat-top"><span>Total menu items</span><span class="seller-stat-icon">☷</span></div><strong><%= products.length %></strong><small>Food listings in your menu</small></article>
         <article class="seller-stat"><div class="seller-stat-top"><span>Available now</span><span class="seller-stat-icon">✓</span></div><strong><%= products.filter(p=>p.isAvailable).length %></strong><small>Items marked available</small></article>
