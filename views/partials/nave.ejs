@@ -2,9 +2,8 @@
   <div class="nav-container">
 
     <!-- Brand -->
-    <a href="/" class="nav-brand" aria-label="Blogify Home">
-      <span class="brand-mark">B</span>
-      <span class="brand-name">Blogify</span>
+    <a href="/" class="nav-brand" aria-label="Goan Craving home">
+      <img class="goan-craving-nav-logo" src="/imgs/8e816e65-0bc5-4a45-9e93-b2c056ff41aa.png" alt="Goan Craving food delivery logo">
     </a>
 
     <% if (locals.user) { %>
@@ -330,6 +329,8 @@
   flex-shrink: 0;
 }
 
+
+.goan-craving-nav-logo{display:block;width:172px;max-width:38vw;height:auto;object-fit:contain}
 
 .brand-mark {
   width: 38px;
@@ -1090,6 +1091,8 @@ html[data-theme="dark"] .nav-badge {
   }
 
 
+  .goan-craving-nav-logo{width:145px;max-width:42vw}
+
   .brand-mark {
     width: 34px;
     height: 34px;
@@ -1183,6 +1186,8 @@ html[data-theme="dark"] .nav-badge {
    ========================================================= */
 
 @media (max-width: 380px) {
+
+  .goan-craving-nav-logo{width:115px;max-width:35vw}
 
   .nav-brand .brand-name {
     display: none;
