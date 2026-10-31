@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 const OrderSchema = new Schema({
+  orderNumber: { type: String, unique: true, sparse: true, index: true },
   user: { type: Schema.Types.ObjectId, ref: "user", required: true, index: true },
   items: [{ product: { type: Schema.Types.ObjectId, ref: "FoodProduct" }, seller: { type: Schema.Types.ObjectId, ref: "user", index: true }, sellerName: { type: String, default: "" }, name: { type: String, required: true }, imageURL: String, unitPrice: { type: Number, required: true }, quantity: { type: Number, required: true, min: 1 } }],
   deliveryAddress: { fullName: { type: String, required: true }, phone: { type: String, required: true }, addressLine: { type: String, required: true }, area: { type: String, required: true }, city: { type: String, required: true }, state: { type: String, required: true }, postalCode: { type: String, required: true } },
