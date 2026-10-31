@@ -29,11 +29,11 @@ router.post("/checkout", requireUser, async (req, res) => {
     for (const field of fields) address[field] = String(req.body[field] || "").trim().slice(0, 180);
     if (fields.some(f => !address[f])) {
       const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-      return res.status(400).render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, error: "Please complete every delivery address field." });
+      return res.status(400).render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress: null, error: "Please complete every delivery address field." });
     }
     if (!/^\+?[0-9\s()-]{8,18}$/.test(address.phone) || !/^[0-9]{5,10}$/.test(address.postalCode)) {
       const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-      return res.status(400).render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, error: "Enter a valid phone number and postal code." });
+      return res.status(400).render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress: null, error: "Enter a valid phone number and postal code." });
     }
     const paymentMethod = String(req.body.paymentMethod || "");
     if (!["cod","upi","card"].includes(paymentMethod)) return res.status(400).send("Select a valid payment method.");
