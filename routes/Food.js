@@ -86,7 +86,7 @@ router.get("/products/:id", async (req, res) => {
     if (!product) return res.status(404).send("Food item not found");
     const [cart, reviews] = await Promise.all([
       loadCart(req),
-      Comment.find({ type: "food_review", foodProduct: product._id, isDeleted: false, isApproved: true })
+      Comment.find({ type: "food_review", foodProduct: product._id, type: "food_review", isVerifiedPurchase: true, isDeleted: false, isApproved: true })
         .populate("author", "fullName profileImageURL")
         .sort({ createdAt: -1 })
         .limit(50)
