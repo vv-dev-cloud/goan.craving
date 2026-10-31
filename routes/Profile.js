@@ -6,7 +6,7 @@ const FollowRequest = require("../models/FollowRequest");
 const { restrictToLoggedInUserOnly } = require("../middlewares/authentication");
 const cloudinaryUpload = require("../middlewares/CloudinaryUploads");
 
-router.get("/", async (req, res) => { if (!req.user) return res.redirect("/user/signin"); return renderProfile(req, res, req.user._id); });
+router.get("/", async (req, res) => { if (!req.user) return res.redirect("/user/signin"); return res.redirect("/account"); });
 router.get("/settings", restrictToLoggedInUserOnly, async (req, res) => { try { const user = await User.findById(req.user._id).populate("blockedUsers", "fullName profileImageURL"); if (!user) return res.status(404).send("User not found"); res.render("settings", { user, activeSection: req.query.section || "profile" }); } catch (error) { console.error("Settings Page Error:", error); res.status(500).render("error", { error: "Unable to load settings" }); } });
 router.get("/edit", restrictToLoggedInUserOnly, async (req, res) => { try { const user = await User.findById(req.user._id).select("fullName email bio website location profileImageURL followers following notificationSettings theme").lean(); if (!user) return res.status(404).send("User not found"); res.render("editProfile", { user, success: null, error: null }); } catch (error) { console.error("Edit Profile Page Error:", error); res.status(500).render("error", { error: "Unable to load profile editor" }); } });
 router.get("/:userId", async (req, res) => renderProfile(req, res, req.params.userId));

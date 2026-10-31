@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en"><head><%- include("../partials/head") %><title>My Account | Goan Craving</title>
+<style>
+:root{--gc-green:#174d35;--gc-green2:#246344;--gc-orange:#e9783e;--gc-cream:#fbf7ef;--gc-line:#eee6da;--gc-muted:#7c756b}
+body{background:var(--gc-cream)!important;color:#27352b!important;margin-top:70px}
+.account-wrap{max-width:1050px;margin:28px auto 70px;padding:0 16px}
+.account-hero{background:linear-gradient(125deg,#174d35,#286b4b);border-radius:24px;padding:25px;color:#fff;display:flex;align-items:center;gap:18px;box-shadow:0 16px 36px rgba(23,77,53,.16)}
+.account-avatar{width:76px;height:76px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.75)}
+.account-hero h1{font-size:1.55rem;font-weight:850;margin:0 0 4px}.account-hero p{margin:0;color:#d9eadf;font-size:.9rem}
+.account-hero .edit-link{margin-left:auto;color:#fff;text-decoration:none;border:1px solid #ffffff70;border-radius:12px;padding:10px 13px;font-weight:750;white-space:nowrap}
+.quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0}
+.quick-card,.section-card{background:#fff;border:1px solid var(--gc-line);border-radius:18px;box-shadow:0 8px 24px rgba(42,32,20,.04)}
+.quick-card{padding:17px;display:flex;align-items:center;gap:13px;color:#27352b;text-decoration:none}
+.quick-icon{width:44px;height:44px;border-radius:14px;background:#eaf2eb;color:var(--gc-green);display:grid;place-items:center;font-size:1.05rem}
+.quick-card strong{display:block}.quick-card small{color:var(--gc-muted)}
+.section-card{padding:20px;margin:14px 0}.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.section-title h2{font-size:1.08rem;color:var(--gc-green);font-weight:850;margin:0}
+.gc-btn{border:0;border-radius:11px;padding:10px 14px;background:var(--gc-green);color:#fff;font-weight:800}.gc-btn.orange{background:var(--gc-orange)}.gc-btn.light{background:#f4eee5;color:#4c463e}.gc-btn.danger{background:#fff0ed;color:#b64735}
+.address-grid,.payment-grid,.bank-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.item-card{border:1px solid var(--gc-line);border-radius:15px;padding:15px;background:#fff;min-width:0}.item-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.item-head strong{color:#27352b}.pill{font-size:.7rem;font-weight:800;border-radius:99px;padding:5px 9px;background:#eaf2eb;color:var(--gc-green)}.item-card p{color:#71695f;font-size:.87rem;line-height:1.55;margin:9px 0}.item-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.item-actions button{font-size:.78rem;padding:8px 10px}
+.empty-state{padding:22px;text-align:center;border:1px dashed #d9cdbd;border-radius:14px;color:#81786d}.empty-state i{font-size:1.5rem;color:#b5a58f;margin-bottom:8px}
+.orders-list{display:grid;gap:10px}.order-row{border:1px solid var(--gc-line);border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}.order-row p{margin:4px 0 0;color:#81786d;font-size:.82rem}.status{font-size:.72rem;text-transform:capitalize;font-weight:800;border-radius:99px;padding:6px 9px;background:#f4eee5;color:#62594f}.status.delivered{background:#eaf2eb;color:#1d6842}.status.cancelled{background:#fff0ed;color:#b64735}
+.gc-form{display:none;border:1px solid var(--gc-line);border-radius:15px;padding:16px;margin:12px 0;background:#fff}.gc-form.open{display:block}.gc-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.gc-fields input,.gc-fields select,.gc-fields textarea{width:100%;border:1px solid #e7dfd4;border-radius:10px;padding:11px;background:#fff;color:#27352b;font:inherit}.gc-fields .wide{grid-column:1/-1}.gc-fields label{font-size:.78rem;font-weight:750;color:#6e665b;display:block;margin-bottom:4px}.form-actions{display:flex;gap:8px;margin-top:12px}.helper{font-size:.78rem;color:#81786d;line-height:1.5}.toast-msg{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#193f2d;color:white;padding:12px 18px;border-radius:12px;z-index:9999;display:none;box-shadow:0 10px 30px #0002}
+@media(max-width:650px){.account-wrap{margin-top:18px}.account-hero{padding:19px;gap:12px}.account-avatar{width:62px;height:62px}.account-hero h1{font-size:1.25rem}.account-hero .edit-link{padding:8px 10px;font-size:.78rem}.quick-grid,.address-grid,.payment-grid,.bank-grid{grid-template-columns:1fr}.section-card{padding:16px}.gc-fields{grid-template-columns:1fr}.gc-fields .wide{grid-column:auto}.order-row{align-items:flex-start;flex-direction:column}}
+</style></head>
+<body><%- include("../partials/nave") %>
+<main class="account-wrap">
+  <section class="account-hero">
+    <img class="account-avatar" src="<%= user.profileImageURL || '/imgs/default.png' %>" alt="Profile photo" onerror="this.src='/imgs/default.png'">
+    <div><h1><%= user.fullName %></h1><p><%= user.email %></p><p style="margin-top:7px;font-size:.76rem">Goan Craving customer account</p></div>
+    <a class="edit-link" href="/user/profile/edit"><i class="fa-solid fa-pen"></i> Edit profile</a>
+  </section>
+
+  <div class="quick-grid">
+    <a class="quick-card" href="#orders"><span class="quick-icon"><i class="fa-solid fa-bag-shopping"></i></span><span><strong>My Orders</strong><small><%= orders.length %> recent orders</small></span></a>
+    <a class="quick-card" href="#addresses"><span class="quick-icon"><i class="fa-solid fa-location-dot"></i></span><span><strong>Saved Addresses</strong><small><%= account.addresses.length %> delivery locations</small></span></a>
+  </div>
+
+  <section class="section-card" id="addresses">
+    <div class="section-title"><h2><i class="fa-solid fa-map-location-dot"></i> Saved addresses</h2><button class="gc-btn orange" type="button" onclick="toggleForm('addressForm')"><i class="fa-solid fa-plus"></i> Add address</button></div>
+    <form class="gc-form" id="addressForm" onsubmit="saveAddress(event)">
+      <input type="hidden" id="addressId">
+      <div class="gc-fields">
+        <div><label>Address type</label><select name="label"><option>Home</option><option>Work</option><option>Other</option></select></div>
+        <div><label>Full name</label><input name="fullName" required maxlength="100"></div>
+        <div><label>Phone number</label><input name="phone" required maxlength="18"></div>
+        <div><label>House / street</label><input name="addressLine" required maxlength="180"></div>
+        <div><label>Area / locality</label><input name="area" required maxlength="120"></div>
+        <div><label>Village / city</label><input name="city" required maxlength="80"></div>
+        <div><label>State</label><input name="state" required maxlength="80" value="Goa"></div>
+        <div><label>PIN code</label><input name="postalCode" required inputmode="numeric" maxlength="10"></div>
+        <div class="wide"><label>Delivery instructions (optional)</label><textarea name="instructions" rows="2" maxlength="250"></textarea></div>
+        <label class="wide"><input type="checkbox" name="isDefault"> Set as my default delivery address</label>
+      </div>
+      <div class="form-actions"><button class="gc-btn" type="submit">Save address</button><button class="gc-btn light" type="button" onclick="toggleForm('addressForm',false)">Cancel</button></div>
+    </form>
+    <% if(!account.addresses.length){ %><div class="empty-state"><i class="fa-solid fa-house"></i><div><strong>No saved addresses yet</strong></div><span>Add your home or work address for faster checkout.</span></div><% } else { %>
+      <div class="address-grid"><% account.addresses.forEach(a=>{ %><article class="item-card" data-address='<%- JSON.stringify(a).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/'/g,"&#39;") %>'><div class="item-head"><strong><i class="fa-solid fa-<%= a.label==='Home'?'house':a.label==='Work'?'briefcase':'location-dot' %>"></i> <%= a.label %></strong><% if(a.isDefault){ %><span class="pill">Default</span><% } %></div><p><strong><%= a.fullName %></strong> · <%= a.phone %><br><%= a.addressLine %>, <%= a.area %><br><%= a.city %>, <%= a.state %> - <%= a.postalCode %><% if(a.instructions){ %><br><small>Note: <%= a.instructions %></small><% } %></p><div class="item-actions"><button class="gc-btn light" type="button" onclick="editAddress(this)">Edit</button><% if(!a.isDefault){ %><button class="gc-btn light" type="button" onclick="setDefault('<%=a._id%>')">Make default</button><% } %><button class="gc-btn danger" type="button" onclick="deleteItem('/account/addresses/<%=a._id%>')">Remove</button></div></article><% }) %></div>
+    <% } %>
+  </section>
+
+  <section class="section-card" id="payments">
+    <div class="section-title"><h2><i class="fa-regular fa-credit-card"></i> Payment methods</h2></div>
+    <% if(!account.paymentMethods.length){ %><div class="empty-state"><i class="fa-regular fa-credit-card"></i><div><strong>No saved cards</strong></div><span>Cards can only be saved as secure payment-provider tokens. Goan Craving is not yet connected to a card vault, so card numbers and CVVs are never stored here.</span></div><% } else { %><div class="payment-grid"><% account.paymentMethods.forEach(p=>{ %><article class="item-card"><div class="item-head"><strong><i class="fa-regular fa-credit-card"></i> <%=p.brand%> •••• <%=p.last4%></strong><span class="pill"><%=p.label%></span></div><p>Expires <%=p.expiryMonth?String(p.expiryMonth).padStart(2,'0')+'/':''%><%=p.expiryYear||'—'%></p><div class="item-actions"><button class="gc-btn light" type="button" onclick="editPayment('<%=p._id%>','<%=p.label%>')">Edit label</button><button class="gc-btn danger" type="button" onclick="deleteItem('/account/payment-methods/<%=p._id%>')">Remove</button></div></article><% }) %></div><% } %>
+    <p class="helper" style="margin-top:12px">When a PCI-compliant payment gateway/card vault is connected, customers will be able to add and manage tokenized cards here.</p>
+  </section>
+
+  <section class="section-card" id="refunds">
+    <div class="section-title"><h2><i class="fa-solid fa-building-columns"></i> Bank details for refunds</h2><button class="gc-btn orange" type="button" onclick="toggleForm('bankForm')"><i class="fa-solid fa-plus"></i> Add bank</button></div>
+    <form class="gc-form" id="bankForm" onsubmit="saveBank(event)">
+      <div class="gc-fields">
+        <div><label>Account holder name</label><input name="accountHolder" required maxlength="100"></div><div><label>Bank name</label><input name="bankName" required maxlength="100"></div>
+        <div><label>Account number</label><input name="accountNumber" required inputmode="numeric" autocomplete="off" maxlength="34"></div><div><label>IFSC code</label><input name="ifsc" required maxlength="11" autocapitalize="characters"></div>
+        <div class="wide"><label>Label (optional)</label><input name="label" maxlength="40" placeholder="My refund account"></div>
+      </div>
+      <p class="helper">Account numbers are encrypted before being stored. A 32-byte ACCOUNT_DATA_ENCRYPTION_KEY must be configured in the deployment environment.</p>
+      <div class="form-actions"><button class="gc-btn" type="submit">Save bank details</button><button class="gc-btn light" type="button" onclick="toggleForm('bankForm',false)">Cancel</button></div>
+    </form>
+    <% if(!account.bankAccounts.length){ %><div class="empty-state"><i class="fa-solid fa-building-columns"></i><div><strong>No refund bank account saved</strong></div><span>Add a bank account if support needs to arrange an eligible refund by bank transfer.</span></div><% } else { %><div class="bank-grid"><% account.bankAccounts.forEach(b=>{ %><article class="item-card"><div class="item-head"><strong><%=b.bankName%></strong><span class="pill">Refund account</span></div><p><%=b.accountHolder%><br>Account ending •••• <%=b.accountNumberLast4%><br>IFSC: <%=b.ifsc%></p><div class="item-actions"><button class="gc-btn danger" type="button" onclick="deleteItem('/account/bank-accounts/<%=b._id%>')">Remove</button></div></article><% }) %></div><% } %>
+  </section>
+
+  <section class="section-card" id="orders">
+    <div class="section-title"><h2><i class="fa-solid fa-bag-shopping"></i> My orders</h2><a class="gc-btn light" href="/orders">View all</a></div>
+    <% if(!orders.length){ %><div class="empty-state"><i class="fa-solid fa-basket-shopping"></i><div><strong>No orders yet</strong></div><span>Your food orders will appear here.</span><p><a href="/search" style="color:#df713b;font-weight:800">Explore food</a></p></div><% } else { %>
+      <div class="orders-list"><% orders.forEach(o=>{ %><article class="order-row"><div><strong>Order #<%=String(o._id).slice(-8).toUpperCase()%></strong><p><%=new Date(o.createdAt).toLocaleDateString()%> · <%=o.items.length%> item(s) · ₹<%=Number(o.total).toFixed(2)%></p><p><%=o.paymentMethod.toUpperCase()%> · <%=o.paymentStatus%><% if(o.refundStatus && o.refundStatus!=='none'){ %> · Refund: <%=o.refundStatus%><% } %></p></div><div><span class="status <%=o.orderStatus%>"><%=o.orderStatus.replace(/_/g,' ')%></span><div class="item-actions"><a class="gc-btn light" style="text-decoration:none" href="/orders/<%=o._id%>">Details</a><% if(['placed','confirmed'].includes(o.orderStatus)){ %><button class="gc-btn danger" type="button" onclick="cancelOrder('<%=o._id%>')">Cancel</button><% } %></div></div></article><% }) %></div>
+    <% } %>
+  </section>
+
+  <section class="section-card"><div class="section-title"><h2><i class="fa-solid fa-life-ring"></i> Customer support</h2></div><div class="quick-grid" style="margin:0"><a class="quick-card" href="/support/chat"><span class="quick-icon"><i class="fa-solid fa-headset"></i></span><span><strong>Help & support</strong><small>Get help with your order</small></span></a><a class="quick-card" href="/user/profile/settings"><span class="quick-icon"><i class="fa-solid fa-shield-halved"></i></span><span><strong>Privacy & settings</strong><small>Manage account preferences</small></span></a></div><p style="margin:18px 0 0"><a href="/user/logout" style="color:#b64735;font-weight:800;text-decoration:none"><i class="fa-solid fa-right-from-bracket"></i> Log out</a></p></section>
+</main>
+<div class="toast-msg" id="toastMsg" role="status" aria-live="polite"></div>
+<script>
+function toggleForm(id,force){const el=document.getElementById(id);if(!el)return;el.classList.toggle('open',typeof force==='boolean'?force:!el.classList.contains('open'));}
+function toast(message){const el=document.getElementById('toastMsg');el.textContent=message;el.style.display='block';clearTimeout(window.__gcToast);window.__gcToast=setTimeout(()=>el.style.display='none',2800);}
+async function api(url,method='POST',body){const response=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json','Accept':'application/json'},body:body?JSON.stringify(body):undefined});const data=await response.json().catch(()=>({}));if(!response.ok||!data.success)throw new Error(data.message||'Request failed');return data;}
+async function saveAddress(event){event.preventDefault();const form=event.currentTarget;const body=Object.fromEntries(new FormData(form).entries());body.isDefault=form.elements.isDefault.checked?'true':'false';const id=document.getElementById('addressId').value;try{const result=await api(id?'/account/addresses/'+id:'/account/addresses',id?'PUT':'POST',body);toast(result.message);location.reload();}catch(e){toast(e.message);}}
+function editAddress(button){const card=button.closest('[data-address]');const data=JSON.parse(card.dataset.address);const form=document.getElementById('addressForm');document.getElementById('addressId').value=data._id;for(const [key,value] of Object.entries(data)){if(form.elements[key]){if(form.elements[key].type==='checkbox')form.elements[key].checked=!!value;else form.elements[key].value=value??'';}}toggleForm('addressForm',true);form.scrollIntoView({behavior:'smooth',block:'center'});}
+async function setDefault(id){try{const r=await api('/account/addresses/'+id+'/default');toast(r.message);location.reload();}catch(e){toast(e.message);}}
+async function deleteItem(url){if(!confirm('Remove this saved detail?'))return;try{const r=await api(url,'DELETE');toast(r.message);location.reload();}catch(e){toast(e.message);}}
+async function saveBank(event){event.preventDefault();const form=event.currentTarget;const body=Object.fromEntries(new FormData(form).entries());try{const r=await api('/account/bank-accounts','POST',body);toast(r.message);location.reload();}catch(e){toast(e.message);}}
+async function editPayment(id,current){const label=prompt('Card label',current||'Card');if(label===null)return;try{const r=await api('/account/payment-methods/'+id,'PUT',{label});toast(r.message);location.reload();}catch(e){toast(e.message);}}
+async function cancelOrder(id){if(!confirm('Cancel this order? Orders that have already been prepared cannot be cancelled here.'))return;try{const r=await api('/account/orders/'+id+'/cancel');toast(r.message);location.reload();}catch(e){toast(e.message);}}
+</script>
+<%- include("../partials/scripts") %></body></html>
