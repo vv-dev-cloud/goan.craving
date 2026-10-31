@@ -11,17 +11,6 @@
 
       <div class="nav-actions">
 
-        <!-- Add Blog -->
-        <a
-          href="/blogs/add-new"
-          class="nav-add-blog"
-          aria-label="Add Blog"
-          title="Add Blog"
-        >
-          <i class="fas fa-plus"></i>
-          <span>Add Blog</span>
-        </a>
-
         <!-- Notifications -->
         <a
           href="/notifications"
@@ -239,6 +228,7 @@
   <div class="gc-drawer-head"><img src="/imgs/8e816e65-0bc5-4a45-9e93-b2c056ff41aa.png" alt="Goan Craving"><button type="button" id="gcDrawerClose" aria-label="Close navigation menu">×</button></div>
   <nav class="gc-drawer-links">
     <a href="/#how-it-works"><span class="gc-drawer-icon">✦</span><span>How it works</span><span class="gc-drawer-arrow">›</span></a>
+    <% if (locals.user) { %><a href="<%= locals.user.sellerProfile?.showName ? '/seller/dashboard' : '/seller/register' %>"><span class="gc-drawer-icon">🍲</span><span><%= locals.user.sellerProfile?.showName ? 'Seller Dashboard' : 'Register as a Seller' %></span><span class="gc-drawer-arrow">›</span></a><% } %>
     <a href="/user/profile/settings"><span class="gc-drawer-icon">⚙</span><span>Settings</span><span class="gc-drawer-arrow">›</span></a>
     <a href="/messages/chatlog"><span class="gc-drawer-icon">💬</span><span>Chat with Support</span><span class="gc-drawer-arrow">›</span></a>
     <a href="/cart"><span class="gc-drawer-icon">🛒</span><span>Cart</span><span class="gc-drawer-arrow">›</span></a>
