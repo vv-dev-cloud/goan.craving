@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const FoodCart = require("../models/FoodCart");
 const FoodOrder = require("../models/FoodOrder");
 const CustomerAccount = require("../models/CustomerAccount");
+const NotificationService = require("../services/notificationService");
 const router = express.Router();
 const requireUser = (req, res, next) => req.user ? next() : res.redirect("/user/signin?redirect=" + encodeURIComponent(req.originalUrl || "/checkout"));
 const ownerKey = req => "user:" + String(req.user._id);
@@ -42,6 +43,7 @@ router.post("/checkout", requireUser, async (req, res) => {
     const order = await FoodOrder.create({ user: req.user._id, items: orderItems, deliveryAddress: address, paymentMethod, paymentStatus: "pending", total });
     cart.items = [];
     await cart.save();
+    await NotificationService.createNotification(req.user._id, "order_placed", { title: "Order received", message: `Your order with ${order.items.length} item(s) has been placed. We will keep you updated.`, order: order._id, url: `/orders/${order._id}`, pushTitle: "Goan Craving · Order received", pushMessage: `Your order #${String(order._id).slice(-6)} has been placed.` });
     return res.redirect("/orders/" + order._id);
   } catch (e) { console.error("Place order:", e); res.status(500).send("Unable to place your order."); }
 });
