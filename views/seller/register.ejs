@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><%- include("../partials/head") %><title>Seller registration | Goan Craving</title>
+<style>
+.seller-wrap{max-width:620px;margin:100px auto 60px;padding:20px}.seller-card{background:#fff;border:1px solid #eadfce;border-radius:24px;padding:clamp(22px,5vw,40px);box-shadow:0 14px 45px #49301912}.seller-card h1{color:#17552b;font-size:clamp(1.8rem,5vw,2.5rem);margin:0 0 8px}.seller-card p{color:#6f675c;line-height:1.6}.seller-field{margin:20px 0}.seller-field label{display:block;font-weight:750;margin-bottom:7px}.seller-field input{width:100%;padding:13px;border:1px solid #e5d8c7;border-radius:12px;font:inherit}.seller-submit{width:100%;border:0;border-radius:12px;background:#f36b35;color:white;padding:14px;font-weight:800;cursor:pointer}.seller-error{background:#fff0ed;color:#a32c1b;padding:12px;border-radius:10px}
+</style></head><body><%- include("../partials/nave") %>
+<main class="seller-wrap"><section class="seller-card"><div style="font-size:2rem">🌴</div><h1>Become a Goan Craving seller</h1><p>Set up your seller profile first. You can add your food photos, descriptions and prices from your dashboard.</p>
+<% if(error){ %><div class="seller-error" role="alert"><%= error %></div><% } %>
+<form method="post" action="/seller/register">
+<div class="seller-field"><label for="fullName">Full name</label><input id="fullName" name="fullName" value="<%= user.sellerProfile?.fullName || user.fullName || '' %>" minlength="2" maxlength="100" required autocomplete="name"></div>
+<div class="seller-field"><label for="showName">Seller / shop display name</label><input id="showName" name="showName" value="<%= user.sellerProfile?.showName || '' %>" minlength="2" maxlength="80" placeholder="Example: Auntie’s Goan Kitchen" required></div>
+<button class="seller-submit" type="submit">Register and open dashboard</button>
+</form></section></main><%- include("../partials/scripts") %></body></html>
