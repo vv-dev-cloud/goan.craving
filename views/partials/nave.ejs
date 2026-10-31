@@ -98,7 +98,7 @@
                 <i class="fas fa-user"></i>
               </span>
 
-              <span>Profile</span>
+              <span>My Account</span>
             </a>
 
 
@@ -233,7 +233,7 @@
     <a href="/messages/chatlog"><span class="gc-drawer-icon">💬</span><span>Chat with Support</span><span class="gc-drawer-arrow">›</span></a>
     <a href="/cart"><span class="gc-drawer-icon">🛒</span><span>Cart</span><span class="gc-drawer-arrow">›</span></a>
     <a href="/orders"><span class="gc-drawer-icon">▤</span><span>My Orders</span><span class="gc-drawer-arrow">›</span></a>
-    <% if (locals.user) { %><a href="/user/profile"><span class="gc-drawer-icon">♙</span><span>Account</span><span class="gc-drawer-arrow">›</span></a><% } else { %><a href="/user/signin"><span class="gc-drawer-icon">♙</span><span>Sign in / Account</span><span class="gc-drawer-arrow">›</span></a><% } %>
+    <% if (locals.user) { %><a href="/account"><span class="gc-drawer-icon">♙</span><span>My Account</span><span class="gc-drawer-arrow">›</span></a><% } else { %><a href="/user/signin"><span class="gc-drawer-icon">♙</span><span>Sign in / Account</span><span class="gc-drawer-arrow">›</span></a><% } %>
   </nav>
   <div class="gc-drawer-footer">A taste of Goa, delivered with love.</div>
 </aside>
