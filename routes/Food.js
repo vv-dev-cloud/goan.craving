@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const mongoose = require("mongoose");
 const FoodProduct = require("../models/FoodProduct");
 const FoodCart = require("../models/FoodCart");
+const Comment = require("../models/Comment");
 const router = express.Router();
 
 const starterMenu = [
@@ -83,8 +84,25 @@ router.get("/products/:id", async (req, res) => {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).send("Food item not found");
     const product = await FoodProduct.findOne({ _id: req.params.id, isAvailable: true }).lean();
     if (!product) return res.status(404).send("Food item not found");
-    const cart = await loadCart(req);
-    res.render("food/product-details", { title: product.name + " | Goan Craving", user: req.user || null, product, cartCount: cart.count });
+    const [cart, reviews] = await Promise.all([
+      loadCart(req),
+      Comment.find({ type: "food_review", foodProduct: product._id, type: "food_review", isVerifiedPurchase: true, isDeleted: false, isApproved: true })
+        .populate("author", "fullName profileImageURL")
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .lean()
+    ]);
+    const ratingTotal = reviews.reduce((sum, review) => sum + (Number(review.rating) || 0), 0);
+    const averageRating = reviews.length ? ratingTotal / reviews.length : 0;
+    res.render("food/product-details", {
+      title: product.name + " | Goan Craving",
+      user: req.user || null,
+      product,
+      cartCount: cart.count,
+      reviews,
+      averageRating,
+      reviewCount: reviews.length
+    });
   } catch (error) { console.error("Food details:", error); res.status(500).send("Unable to load this food item."); }
 });
 
@@ -93,14 +111,12 @@ router.get("/checkout", async (req, res) => {
   if (!cart.items.length) return res.redirect("/cart");
   res.render("food/checkout-placeholder", { title: "Checkout | Goan Craving", user: req.user || null, total: cart.total, count: cart.count });
 });
-
 router.get("/cart", async (req, res) => {
   try {
     const cart = await loadCart(req);
     res.render("food/cart", { title: "Your cart | Goan Craving", user: req.user || null, ...cart });
   } catch (error) { console.error("Food cart:", error); res.status(500).send("Unable to load your cart."); }
 });
-
 router.post("/cart/add", async (req, res) => {
   try {
     const id = String(req.body.productId || "");
@@ -116,7 +132,6 @@ router.post("/cart/add", async (req, res) => {
     return res.redirect(req.body.buyNow === "1" ? "/cart" : "/cart?added=1");
   } catch (error) { console.error("Add food to cart:", error); res.status(500).send("Unable to add this item to your cart."); }
 });
-
 router.post("/cart/update", async (req, res) => {
   try {
     const id = String(req.body.productId || "");
@@ -131,14 +146,12 @@ router.post("/cart/update", async (req, res) => {
     res.redirect("/cart");
   } catch (error) { console.error("Update cart:", error); res.status(500).send("Unable to update cart."); }
 });
-
 router.post("/cart/remove", async (req, res) => {
   try {
     const cart = await getOrCreateCart(req);
     cart.items = cart.items.filter(row => String(row.product) !== String(req.body.productId || ""));
     await cart.save();
     res.redirect("/cart");
-  } catch (error) { console.error("Remove cart item:", error); res.status(500).send("Unable to remove item."); }
+  } catch (error) { console.error("Remove cart:", error); res.status(500).send("Unable to remove item."); }
 });
-
 module.exports = router;
