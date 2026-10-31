@@ -32,7 +32,7 @@
               <% } %>
               <form method="POST" enctype="multipart/form-data" action="/food-reviews/orders/<%=order._id%>/products/<%=productId%>">
                 <div class="stars" role="radiogroup" aria-label="Food rating">
-                  <% for(let n=1;n<=5;n++){ %><input id="rating-<%=productId%>-<%=n%>" type="radio" name="rating" value="<%=n%>" <%=Number(review?.rating||0)===n?"checked":(!review&&n===5?"checked":"")%> required><label for="rating-<%=productId%>-<%=n%>" title="<%=n%> stars">★</label><% } %>
+                  <% for(let n=1;n<=5;n++){ %><input id="rating-<%=productId%>-<%=n%>" type="radio" name="rating" value="<%=n%>" <%=Number(review?.rating||0)===n?"checked":""%> required><label for="rating-<%=productId%>-<%=n%>" title="<%=n%> stars">★</label><% } %>
                 </div>
                 <label for="description-<%=productId%>"><strong>Describe your experience</strong></label>
                 <textarea id="description-<%=productId%>" name="description" maxlength="1200" placeholder="How was the taste, quality and portion size?"><%=review&&review.content!=="Rated this food."?review.content:""%></textarea>
