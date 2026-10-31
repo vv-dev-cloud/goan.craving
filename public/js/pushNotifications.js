@@ -7,7 +7,7 @@
         subscribeEndpoint: "/push/subscribe",
         statusEndpoint: "/push/status",
         autoPromptDelay: 1200,
-        dismissedKey: "blogify-push-prompt-dismissed"
+        dismissedKey: "goan-craving-push-prompt-dismissed"
     };
 
     const state = { registration: null, publicKey: null, initialized: false };
@@ -84,7 +84,7 @@
         document.head.appendChild(style);
         const prompt = document.createElement("div");
         prompt.id = "blogify-push-permission-prompt";
-        prompt.innerHTML = `<div class="push-icon"><i class="fas fa-bell"></i></div><div class="push-copy"><strong>Stay updated on Blogify</strong><span>Get alerts for messages, comments, follows and other important activity.</span></div><div class="push-actions"><button type="button" class="push-later">Not now</button><button type="button" class="push-enable">Enable notifications</button></div>`;
+        prompt.innerHTML = `<div class="push-icon"><i class="fas fa-bell"></i></div><div class="push-copy"><strong>Stay updated on Goan Craving</strong><span>Get important order, payment and refund updates from Goan Craving.</span></div><div class="push-actions"><button type="button" class="push-later">Not now</button><button type="button" class="push-enable">Enable notifications</button></div>`;
         document.body.appendChild(prompt);
         prompt.querySelector(".push-later").addEventListener("click", () => {
             try { sessionStorage.setItem(CONFIG.dismissedKey, "1"); } catch (_) {}
@@ -155,27 +155,7 @@
         };
     }
 
-    async function init() {
-        if (state.initialized || !supported()) return;
-        state.initialized = true;
-
-        const publicKeyResponse = await fetch(CONFIG.publicKeyEndpoint, { credentials: "same-origin", cache: "no-store" }).catch(() => null);
-        if (!publicKeyResponse || publicKeyResponse.status === 401) return;
-        if (!publicKeyResponse.ok) {
-            console.warn("Blogify push initialization unavailable:", publicKeyResponse.status);
-            return;
-        }
-
-        if (Notification.permission === "granted") {
-            await syncGrantedPermission();
-            return;
-        }
-        if (Notification.permission === "denied") return;
-
-        let dismissed = false;
-        try { dismissed = sessionStorage.getItem(CONFIG.dismissedKey) === "1"; } catch (_) {}
-        if (!dismissed) window.setTimeout(showPermissionPrompt, CONFIG.autoPromptDelay);
-    }
+    async function init() {\n        if (state.initialized || !supported()) return;\n        state.initialized = true;\n        // Permission is requested only after an explicit customer action.\n        if (Notification.permission === "granted") await syncGrantedPermission();\n    }
 
     window.BlogifyPush = {
         enable: enablePush,

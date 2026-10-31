@@ -153,11 +153,11 @@ async function sendToUser(userId, payload, options = {}) {
 
 async function sendTestNotification(userId) {
     return sendToUser(userId, {
-        title: "Blogify",
-        body: "Web push notifications are working!",
+        title: "Goan Craving",
+        body: "Goan Craving push alerts are working!",
         icon: "/imgs/default.png",
         badge: "/imgs/default.png",
-        tag: "blogify-test",
+        tag: "goan-craving-test",
         renotify: true,
         data: { url: "/notifications", type: "test" }
     }, { urgency: "high", ttl: 300 });
