@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const { restrictToLoggedInUserOnly } = require("../middlewares/authentication");
 const CustomerAccount = require("../models/CustomerAccount");
 const FoodOrder = require("../models/FoodOrder");
+const NotificationService = require("../services/notificationService");
 
 const router = express.Router();
 router.use(restrictToLoggedInUserOnly);
@@ -164,6 +165,8 @@ router.post("/orders/:orderId/cancel", async (req, res) => {
       order.refundNote = "Cancellation refund requires payment-provider or admin processing.";
     }
     await order.save();
+    await NotificationService.createNotification(req.user._id, "order_status", { title: "Order cancelled", message: order.paymentStatus === "paid" ? "Your order was cancelled. A refund request has been recorded for processing." : "Your order was cancelled successfully.", order: order._id, url: `/orders/${order._id}`, pushTitle: "Goan Craving · Order cancelled", pushMessage: `Your order #${String(order._id).slice(-6)} was cancelled.` });
+    if (order.paymentStatus === "paid") await NotificationService.createNotification(req.user._id, "refund", { title: "Refund requested", message: `Your refund request for order #${String(order._id).slice(-6)} is recorded.`, order: order._id, url: `/orders/${order._id}`, pushTitle: "Goan Craving · Refund requested", pushMessage: "Your refund request has been recorded." });
     res.json({ success: true, message: order.paymentStatus === "paid" ? "Order cancelled. Your refund request is recorded for processing." : "Order cancelled successfully.", refundStatus: order.refundStatus || "not_required" });
   } catch (error) { console.error("Cancel customer order:", error); res.status(500).json({ success: false, message: "Unable to cancel this order." }); }
 });
