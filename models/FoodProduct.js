@@ -3,6 +3,8 @@ const { Schema, model } = mongoose;
 
 const FoodProductSchema = new Schema({
   name: { type: String, required: true, trim: true, maxlength: 120, index: true },
+  seller: { type: Schema.Types.ObjectId, ref: "user", default: null, index: true },
+  sellerName: { type: String, default: "", trim: true, maxlength: 80 },
   description: { type: String, default: "", maxlength: 2000 },
   price: { type: Number, required: true, min: 0 },
   imageURL: { type: String, default: "" },
