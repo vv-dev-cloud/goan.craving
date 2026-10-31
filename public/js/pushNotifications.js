@@ -156,7 +156,11 @@
     }
 
     async function init() {
-        if (state.initialized || !supported()) return;\n        state.initialized = true;\n        // Permission is requested only after an explicit customer action.\n        if (Notification.permission === "granted") await syncGrantedPermission();\n    }
+        if (state.initialized || !supported()) return;
+        state.initialized = true;
+        // Permission is requested only after an explicit customer action.
+        if (Notification.permission === "granted") await syncGrantedPermission();
+    }
 
     window.BlogifyPush = {
         enable: enablePush,
