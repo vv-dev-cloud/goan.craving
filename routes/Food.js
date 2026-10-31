@@ -42,7 +42,7 @@ router.get("/search", async (req, res) => {
   try {
     await ensureStarterMenu();
     const clean = value => String(value || "").trim().slice(0, 100);
-    const escapeRegex = value => Array.from(value).map(char => ".^$*+?()[]{}|\\\\".includes(char) ? "\\\\" + char : char).join("");
+    const escapeRegex = value => Array.from(value).map(char => ".^$*+?()[]{}|\\".includes(char) ? "\\" + char : char).join("");
     const search = clean(req.query.q);
     const category = clean(req.query.category);
     const restaurant = clean(req.query.restaurant);
