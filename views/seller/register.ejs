@@ -7,6 +7,11 @@
 <% if(error){ %><div class="seller-error" role="alert"><%= error %></div><% } %>
 <form method="post" action="/seller/register">
 <div class="seller-field"><label for="fullName">Full name</label><input id="fullName" name="fullName" value="<%= user.sellerProfile?.fullName || user.fullName || '' %>" minlength="2" maxlength="100" required autocomplete="name"></div>
-<div class="seller-field"><label for="showName">Seller / shop display name</label><input id="showName" name="showName" value="<%= user.sellerProfile?.showName || '' %>" minlength="2" maxlength="80" placeholder="Example: Auntie’s Goan Kitchen" required></div>
+<div class="seller-field"><label for="showName">Seller display name</label><input id="showName" name="showName" value="<%= user.sellerProfile?.showName || '' %>" minlength="2" maxlength="80" placeholder="Your seller name" required></div>
+<div class="seller-field"><label for="restaurantName">Restaurant name</label><input id="restaurantName" name="restaurantName" value="<%= user.sellerProfile?.restaurantName || '' %>" minlength="2" maxlength="120" placeholder="Restaurant or kitchen name" required></div>
+<div class="seller-field"><label for="city">City / town</label><input id="city" name="city" value="<%= user.sellerProfile?.city || '' %>" minlength="2" maxlength="100" placeholder="e.g. Margao" required></div>
+<div class="seller-field"><label for="address">Exact restaurant address</label><input id="address" name="address" value="<%= user.sellerProfile?.address || '' %>" maxlength="240" placeholder="Street, area, landmark" required></div>
+<input type="hidden" id="latitude" name="latitude" value="<%= user.sellerProfile?.latitude ?? '' %>"><input type="hidden" id="longitude" name="longitude" value="<%= user.sellerProfile?.longitude ?? '' %>">
+<p>Include a nearby landmark for accurate delivery pickup.</p>
 <button class="seller-submit" type="submit">Register and open dashboard</button>
 </form></section></main><%- include("../partials/scripts") %></body></html>
