@@ -82,6 +82,11 @@ router.post("/settings", async (req, res) => {
   }
 });
 
+router.get("/profile", (req, res) => {
+  if (!sellerReady(req.user)) return res.redirect("/seller/register");
+  return res.render("seller/profile", { title: "Seller Account | Goan Craving", user: req.user });
+});
+
 router.get("/dashboard", async (req, res) => {
   if (!sellerReady(req.user)) return res.redirect("/seller/register");
   try {
