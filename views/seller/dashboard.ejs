@@ -63,12 +63,14 @@
         <a class="seller-nav active" href="/seller/dashboard">▦ Dashboard</a>
         <a class="seller-nav" href="#menu">☷ My food menu</a>
         <a class="seller-nav" href="/seller/orders">▤ Orders & sales</a>
+        <a class="seller-nav" href="/seller/profile">♙ Account profile</a>
+        <a class="seller-nav" href="/seller/settings">⚙ Settings</a>
         <a class="seller-nav" href="/seller/products/new">＋ Add food item</a>
       </nav>
     </aside>
     <section class="seller-main">
       <header class="seller-heading">
-        <div><p class="seller-eyebrow">SELLER DASHBOARD</p><h1>Welcome back, <%= user.sellerProfile.showName %>!</h1><p class="seller-subtitle">Here’s what’s happening with your food menu.</p></div>
+        <div><p class="seller-eyebrow">SELLER DASHBOARD</p><h1>Welcome back, <%= user.sellerProfile.showName %>!</h1><p class="seller-subtitle">Here’s what’s happening with your food menu.</p><p class="seller-subtitle"><strong><%= user.sellerProfile.restaurantName || user.sellerProfile.showName %></strong> · <%= user.sellerProfile.city || "Location not set" %></p></div>
         <a class="seller-action" href="/seller/products/new">＋ Add food item</a>
       </header>
       <section class="seller-welcome">

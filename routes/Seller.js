@@ -9,7 +9,7 @@ const imageUpload = cloudinaryUpload.mediaUpload;
 
 router.use(restrictToLoggedInUserOnly);
 
-function sellerReady(user) { return Boolean(user?.sellerProfile?.showName); }
+function sellerReady(user) { return Boolean(user?.sellerProfile?.showName && user?.sellerProfile?.restaurantName && user?.sellerProfile?.city); }
 function renderRegister(res, user, error = null) {
   return res.status(error ? 400 : 200).render("seller/register", { title: "Register as a Seller | Goan Craving", user, error });
 }
@@ -23,17 +23,64 @@ router.post("/register", async (req, res) => {
   try {
     const fullName = String(req.body.fullName || "").trim().slice(0, 100);
     const showName = String(req.body.showName || "").trim().slice(0, 80);
-    if (!fullName || !showName) return renderRegister(res, req.user, "Enter your full name and seller display name.");
-    if (fullName.length < 2 || showName.length < 2) return renderRegister(res, req.user, "Names must be at least 2 characters.");
+    const restaurantName = String(req.body.restaurantName || "").trim().slice(0, 120);
+    const city = String(req.body.city || "").trim().slice(0, 100);
+    const address = String(req.body.address || "").trim().slice(0, 240);
+    const latitude = req.body.latitude === "" ? undefined : Number(req.body.latitude);
+    const longitude = req.body.longitude === "" ? undefined : Number(req.body.longitude);
+    if (!fullName || !showName || !restaurantName || !city || !address) return renderRegister(res, req.user, "Complete your seller name, restaurant name, city and exact address.");
+    if ([fullName, showName, restaurantName, city].some(value => value.length < 2)) return renderRegister(res, req.user, "Names and city must be at least 2 characters.");
+    if ((latitude !== undefined && (!Number.isFinite(latitude) || latitude < -90 || latitude > 90)) || (longitude !== undefined && (!Number.isFinite(longitude) || longitude < -180 || longitude > 180))) return renderRegister(res, req.user, "Location coordinates are invalid.");
     const user = await User.findById(req.user._id);
     if (!user) return res.redirect("/user/signin");
-    user.sellerProfile = { fullName, showName, registeredAt: new Date(), isActive: true };
+    user.sellerProfile = { ...(user.sellerProfile?.toObject?.() || user.sellerProfile || {}), fullName, showName, restaurantName, city, address, latitude, longitude, registeredAt: user.sellerProfile?.registeredAt || new Date(), isActive: true };
     await user.save();
     return res.redirect("/seller/dashboard");
   } catch (error) {
     console.error("Seller registration:", error.message);
     return renderRegister(res, req.user, "Seller registration could not be completed. Please try again.");
   }
+});
+
+
+router.get("/profile", (req, res) => {
+  if (!sellerReady(req.user)) return res.redirect("/seller/register");
+  return res.render("seller/profile", { title: "Seller Profile | Goan Craving", user: req.user, error: null, notice: req.query.updated ? "Profile saved." : null });
+});
+router.post("/profile", async (req, res) => {
+  if (!sellerReady(req.user)) return res.redirect("/seller/register");
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.redirect("/user/signin");
+    const fields = ["fullName", "showName", "restaurantName", "city", "address"];
+    const values = fields.map((key, i) => String(req.body[key] || "").trim().slice(0, [100,80,120,100,240][i]));
+    if (values.some(value => value.length < 2)) return res.status(400).render("seller/profile", { title: "Seller Profile | Goan Craving", user, error: "Complete every field with at least 2 characters.", notice: null });
+    [user.sellerProfile.fullName,user.sellerProfile.showName,user.sellerProfile.restaurantName,user.sellerProfile.city,user.sellerProfile.address] = values;
+    await user.save();
+    return res.redirect("/seller/profile?updated=1");
+  } catch (error) {
+    console.error("Seller profile update:", error.message);
+    return res.status(500).send("Unable to update seller profile.");
+  }
+});
+router.post("/profile/remove-location", async (req, res) => {
+  if (!sellerReady(req.user)) return res.redirect("/seller/register");
+  try {
+    const user = await User.findById(req.user._id);
+    user.sellerProfile.city = "";
+    user.sellerProfile.address = "";
+    user.sellerProfile.latitude = undefined;
+    user.sellerProfile.longitude = undefined;
+    await user.save();
+    return res.redirect("/seller/register");
+  } catch (error) {
+    console.error("Seller location removal:", error.message);
+    return res.status(500).send("Unable to remove restaurant location.");
+  }
+});
+router.get("/settings", (req, res) => {
+  if (!sellerReady(req.user)) return res.redirect("/seller/register");
+  return res.redirect("/seller/profile#settings");
 });
 
 router.get("/dashboard", async (req, res) => {
