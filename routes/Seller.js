@@ -55,7 +55,12 @@ router.post("/profile", async (req, res) => {
     const fields = ["fullName", "showName", "restaurantName", "city", "address"];
     const values = fields.map((key, i) => String(req.body[key] || "").trim().slice(0, [100,80,120,100,240][i]));
     if (values.some(value => value.length < 2)) return res.status(400).render("seller/profile", { title: "Seller Profile | Goan Craving", user, error: "Complete every field with at least 2 characters.", notice: null });
+    const latitude = req.body.latitude === "" || req.body.latitude == null ? undefined : Number(req.body.latitude);
+    const longitude = req.body.longitude === "" || req.body.longitude == null ? undefined : Number(req.body.longitude);
+    if ((latitude !== undefined && (!Number.isFinite(latitude) || latitude < -90 || latitude > 90)) || (longitude !== undefined && (!Number.isFinite(longitude) || longitude < -180 || longitude > 180)) || ((latitude === undefined) !== (longitude === undefined))) return res.status(400).render("seller/profile", { title: "Seller Profile | Goan Craving", user, error: "Please choose a valid map location.", notice: null });
     [user.sellerProfile.fullName,user.sellerProfile.showName,user.sellerProfile.restaurantName,user.sellerProfile.city,user.sellerProfile.address] = values;
+    user.sellerProfile.latitude = latitude;
+    user.sellerProfile.longitude = longitude;
     await user.save();
     return res.redirect("/seller/profile?updated=1");
   } catch (error) {
