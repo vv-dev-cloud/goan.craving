@@ -53,6 +53,35 @@ router.post("/register", async (req, res) => {
   }
 });
 
+
+// Seller settings: update restaurant identity and pickup coordinates without changing account details.
+router.get("/settings", (req, res) => {
+  if (!sellerReady(req.user)) return res.redirect("/seller/register");
+  return res.render("seller/register", { title: "Restaurant Settings | Goan Craving", user: req.user, error: null, settingsMode: true });
+});
+router.post("/settings", async (req, res) => {
+  try {
+    const restaurantName = String(req.body.restaurantName || "").trim().slice(0, 120);
+    const restaurantAddress = String(req.body.restaurantAddress || "").trim().slice(0, 500);
+    const latitude = Number(req.body.latitude), longitude = Number(req.body.longitude);
+    if (restaurantName.length < 2 || !restaurantAddress ||
+        !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+        !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+      return res.status(400).render("seller/register", { title: "Restaurant Settings | Goan Craving", user: req.user, error: "Enter a restaurant name, address, and valid map coordinates.", settingsMode: true });
+    }
+    const user = await User.findById(req.user._id);
+    if (!user) return res.redirect("/user/signin");
+    user.sellerProfile.restaurantName = restaurantName;
+    user.sellerProfile.restaurantAddress = restaurantAddress;
+    user.sellerProfile.restaurantLocation = { latitude, longitude };
+    await user.save();
+    return res.redirect("/seller/dashboard?settings=saved");
+  } catch (error) {
+    console.error("Seller restaurant settings:", error.message);
+    return res.status(500).render("seller/register", { title: "Restaurant Settings | Goan Craving", user: req.user, error: "Could not save restaurant details. Please try again.", settingsMode: true });
+  }
+});
+
 router.get("/dashboard", async (req, res) => {
   if (!sellerReady(req.user)) return res.redirect("/seller/register");
   try {
