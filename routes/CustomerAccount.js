@@ -35,7 +35,7 @@ function validAddress(body) {
   address.label = ["Home", "Work", "Other"].includes(body.label) ? body.label : "Home";
   address.instructions = clean(body.instructions, 250);
   if (fields.some(field => !address[field])) return null;
-  if (!/^\\+?[0-9\\s()-]{8,18}$/.test(address.phone) || !/^[0-9]{5,10}$/.test(address.postalCode)) return null;
+  if (!/^\+?[0-9\s()-]{8,18}$/.test(address.phone) || !/^[0-9]{5,10}$/.test(address.postalCode)) return null;
   return address;
 }
 
@@ -104,7 +104,7 @@ router.post("/addresses/:addressId/default", async (req, res) => {
 router.post("/bank-accounts", async (req, res) => {
   try {
     const accountHolder = clean(req.body.accountHolder, 100), bankName = clean(req.body.bankName, 100);
-    const accountNumber = clean(req.body.accountNumber, 34).replace(/\\s/g, "");
+    const accountNumber = clean(req.body.accountNumber, 34).replace(/\s/g, "");
     const ifsc = clean(req.body.ifsc, 11).toUpperCase();
     if (accountHolder.length < 2 || bankName.length < 2 || !/^[0-9]{6,34}$/.test(accountNumber) || !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) return res.status(400).json({ success: false, message: "Enter a valid account holder, bank name, account number and IFSC code." });
     const encryptedAccountNumber = encryptAccountNumber(accountNumber);
