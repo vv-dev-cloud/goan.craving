@@ -75,6 +75,15 @@
         <div><h2>Your kitchen, your business 🌿</h2><p>Keep your menu fresh and let customers discover your Goan flavours.</p></div>
         <div class="seller-welcome-mark" aria-hidden="true">🥘</div>
       </section>
+      <section class="seller-panel" style="margin-bottom:24px">
+        <div class="seller-panel-head"><div><h2>Restaurant pickup location</h2><p>This saved location will be used for delivery routing and ETA calculations.</p></div></div>
+        <div style="padding:20px 23px;line-height:1.7">
+          <strong><%= user.sellerProfile.restaurantName || user.sellerProfile.showName %></strong><br>
+          <span><%= user.sellerProfile.restaurantAddress || 'Restaurant address not added' %></span><br>
+          <small style="color:#788078">Map pin: <%= user.sellerProfile.restaurantLocation?.latitude ?? '—' %>, <%= user.sellerProfile.restaurantLocation?.longitude ?? '—' %></small>
+          <div style="margin-top:14px"><a class="seller-action" href="/seller/register">Edit restaurant details</a></div>
+        </div>
+      </section>
       <section class="seller-stats" aria-label="Sales overview">
         <article class="seller-stat"><div class="seller-stat-top"><span>Total orders</span><span class="seller-stat-icon">▤</span></div><strong><%= sellerOrderCount %></strong><small>Orders containing your food</small></article>
         <article class="seller-stat"><div class="seller-stat-top"><span>Units sold</span><span class="seller-stat-icon">✓</span></div><strong><%= unitsSold %></strong><small>Units excluding cancelled orders</small></article>
