@@ -9,7 +9,7 @@ const imageUpload = cloudinaryUpload.mediaUpload;
 
 router.use(restrictToLoggedInUserOnly);
 
-function sellerReady(user) { return Boolean(user?.sellerProfile?.showName); }
+function sellerReady(user) { const p = user?.sellerProfile; return Boolean(p?.showName && p?.restaurantName && p?.restaurantAddress && Number.isFinite(p?.restaurantLocation?.latitude) && Number.isFinite(p?.restaurantLocation?.longitude)); }
 function renderRegister(res, user, error = null) {
   return res.status(error ? 400 : 200).render("seller/register", { title: "Register as a Seller | Goan Craving", user, error });
 }
@@ -23,11 +23,28 @@ router.post("/register", async (req, res) => {
   try {
     const fullName = String(req.body.fullName || "").trim().slice(0, 100);
     const showName = String(req.body.showName || "").trim().slice(0, 80);
-    if (!fullName || !showName) return renderRegister(res, req.user, "Enter your full name and seller display name.");
-    if (fullName.length < 2 || showName.length < 2) return renderRegister(res, req.user, "Names must be at least 2 characters.");
+    const restaurantName = String(req.body.restaurantName || "").trim().slice(0, 120);
+    const restaurantAddress = String(req.body.restaurantAddress || "").trim().slice(0, 500);
+    const latitude = Number(req.body.latitude);
+    const longitude = Number(req.body.longitude);
+    if (!fullName || !showName || !restaurantName || !restaurantAddress) {
+      return renderRegister(res, req.user, "Enter your name, seller display name, restaurant name and restaurant address.");
+    }
+    if (fullName.length < 2 || showName.length < 2 || restaurantName.length < 2) {
+      return renderRegister(res, req.user, "Names must be at least 2 characters.");
+    }
+    if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+      return renderRegister(res, req.user, "Enter valid restaurant map coordinates (latitude and longitude).");
+    }
     const user = await User.findById(req.user._id);
     if (!user) return res.redirect("/user/signin");
-    user.sellerProfile = { fullName, showName, registeredAt: new Date(), isActive: true };
+    user.sellerProfile = {
+      ...(user.sellerProfile?.toObject ? user.sellerProfile.toObject() : user.sellerProfile || {}),
+      fullName, showName, restaurantName, restaurantAddress,
+      restaurantLocation: { latitude, longitude },
+      registeredAt: user.sellerProfile?.registeredAt || new Date(),
+      isActive: true
+    };
     await user.save();
     return res.redirect("/seller/dashboard");
   } catch (error) {
