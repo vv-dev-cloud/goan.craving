@@ -45,6 +45,16 @@ router.get("/search", async (req, res) => {
     const clean = value => String(value || "").trim().slice(0, 100);
     const escapeRegex = value => Array.from(value).map(char => ".^$*+?()[]{}|\\".includes(char) ? "\\" + char : char).join("");
     const search = clean(req.query.q);
+    const postalCode = String(req.query.postalCode || "").trim().replace(/\s/g, "").slice(0, 10);
+    const validPostalCode = /^[0-9]{5,10}$/.test(postalCode) ? postalCode : "";
+    let savedPostalCode = "";
+    if (req.user?._id) {
+      const CustomerAccount = require("../models/CustomerAccount");
+      const account = await CustomerAccount.findOne({ user: req.user._id }).select("addresses").lean();
+      const preferred = account?.addresses?.find(address => address.isDefault) || account?.addresses?.[0];
+      if (preferred && /^[0-9]{5,10}$/.test(String(preferred.postalCode || ""))) savedPostalCode = String(preferred.postalCode);
+    }
+    const deliveryPostalCode = validPostalCode || savedPostalCode;
     const category = clean(req.query.category);
     const restaurant = clean(req.query.restaurant);
     const sort = ["price-asc", "price-desc", "name-asc", "name-desc", "newest"].includes(req.query.sort) ? req.query.sort : "name-asc";
@@ -73,6 +83,7 @@ router.get("/search", async (req, res) => {
     const cart = await loadCart(req);
     res.render("food/search-results", {
       title: "Search food | Goan Craving", user: req.user || null, search, products,
+      postalCode: validPostalCode || savedPostalCode,
       categories: categories.filter(Boolean).sort((a, b) => a.localeCompare(b)),
       restaurants: restaurants.filter(Boolean).sort((a, b) => a.localeCompare(b)),
       filters: { category, restaurant, minPrice: minRaw, maxPrice: maxRaw, sort }, cartCount: cart.count
@@ -84,6 +95,7 @@ router.get("/products/:id", async (req, res) => {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).send("Food item not found");
     const product = await FoodProduct.findOne({ _id: req.params.id, isAvailable: true }).lean();
     if (!product) return res.status(404).send("Food item not found");
+    const postalCode = String(req.query.postalCode || "").trim().replace(/\s/g, "").slice(0, 10);
     const [cart, reviews] = await Promise.all([
       loadCart(req),
       Comment.find({ type: "food_review", foodProduct: product._id, type: "food_review", isVerifiedPurchase: true, isDeleted: false, isApproved: true })
@@ -98,6 +110,7 @@ router.get("/products/:id", async (req, res) => {
       title: product.name + " | Goan Craving",
       user: req.user || null,
       product,
+      postalCode: /^[0-9]{5,10}$/.test(postalCode) ? postalCode : "",
       cartCount: cart.count,
       reviews,
       averageRating,
