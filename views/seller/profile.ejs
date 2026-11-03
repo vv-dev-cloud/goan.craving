@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <%- include("../partials/head") %>
+  <title>Seller Account | Goan Craving</title>
+  <style>
+    :root{--green:#174b2b;--orange:#ef7138;--cream:#f7f8f3;--ink:#243329;--muted:#788078}
+    body{background:var(--cream)}
+    .seller-page{max-width:1200px;margin:96px auto 50px;padding:22px;color:var(--ink)}
+    .seller-layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px}
+    .seller-sidebar{background:var(--green);color:#fff;border-radius:22px;padding:22px 15px;min-height:550px}
+    .seller-brand{font-weight:900;font-size:1.15rem;padding:8px 12px 24px}
+    .seller-nav{display:flex;align-items:center;gap:12px;padding:13px 14px;margin:4px 0;color:#e8f1e8;text-decoration:none;border-radius:12px;font-weight:700}
+    .seller-nav:hover,.seller-nav.active{background:#ffffff20;color:#fff}
+    .seller-main{min-width:0}.eyebrow{font-size:.78rem;letter-spacing:1.2px;color:var(--muted);font-weight:800}
+    h1{margin:5px 0;color:var(--green);font-size:clamp(1.7rem,4vw,2.4rem)}
+    .subtitle{color:var(--muted);margin:8px 0 24px}
+    .profile-hero{display:flex;align-items:center;gap:20px;padding:26px;border-radius:22px;background:linear-gradient(120deg,#e4f0df,#f8f8ed);border:1px solid #dce8d6;margin-bottom:20px}
+    .avatar{width:82px;height:82px;border-radius:22px;object-fit:cover;background:#fff;border:3px solid white;box-shadow:0 6px 20px #174b2b15}
+    .profile-hero h2{margin:0;color:var(--green)}.profile-hero p{margin:7px 0;color:#657567;overflow-wrap:anywhere}
+    .profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .profile-card{background:#fff;border:1px solid #e7ebe2;border-radius:18px;padding:22px}
+    .profile-card h3{margin:0 0 17px;color:var(--green);font-size:1.05rem}
+    .field{padding:13px 0;border-top:1px solid #eff1eb}.field:first-of-type{border-top:0}
+    .field small{display:block;color:var(--muted);font-size:.76rem;margin-bottom:5px}.field strong{display:block;overflow-wrap:anywhere}
+    .action{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:11px;background:var(--orange);color:white;text-decoration:none;font-weight:800}
+    .action.secondary{background:#edf4e9;color:var(--green)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+    @media(max-width:850px){.seller-layout{grid-template-columns:1fr}.seller-sidebar{min-height:auto}.seller-nav-list{display:flex;flex-wrap:wrap}.seller-brand{padding-bottom:12px}.profile-grid{grid-template-columns:1fr}}
+    @media(max-width:560px){.seller-page{padding:12px}.profile-hero{align-items:flex-start;padding:19px}.avatar{width:62px;height:62px;border-radius:17px}.profile-card{padding:18px}}
+  </style>
+</head>
+<body>
+  <%- include("../partials/nave") %>
+  <main class="seller-page">
+    <div class="seller-layout">
+      <aside class="seller-sidebar">
+        <div class="seller-brand">🍃 Goan Craving</div>
+        <nav class="seller-nav-list" aria-label="Seller workspace">
+          <a class="seller-nav" href="/seller/dashboard">▦ Dashboard</a>
+          <a class="seller-nav active" href="/seller/profile">♙ Account profile</a>
+          <a class="seller-nav" href="/seller/orders">▤ Orders & sales</a>
+          <a class="seller-nav" href="/seller/products/new">＋ Add food</a>
+          <a class="seller-nav" href="/seller/settings">⚙ Settings</a>
+          <a class="seller-nav" href="/user/logout">↪ Logout</a>
+        </nav>
+      </aside>
+      <section class="seller-main">
+        <p class="eyebrow">SELLER ACCOUNT</p>
+        <h1>Account profile</h1>
+        <p class="subtitle">Your seller identity and restaurant information in one place.</p>
+        <section class="profile-hero">
+          <img class="avatar" src="<%= user.profileImageURL || '/imgs/default.png' %>" alt="Account profile photo" onerror="this.src='/imgs/default.png'">
+          <div><h2><%= user.sellerProfile.showName || user.fullName %></h2><p><%= user.email || '' %></p><span style="color:#286b4b;font-weight:800;font-size:.82rem">● Seller account</span></div>
+        </section>
+        <div class="profile-grid">
+          <section class="profile-card">
+            <h3>Personal account</h3>
+            <div class="field"><small>Full name</small><strong><%= user.sellerProfile.fullName || user.fullName || 'Not added' %></strong></div>
+            <div class="field"><small>Email address</small><strong><%= user.email || 'Not added' %></strong></div>
+            <div class="field"><small>Seller display name</small><strong><%= user.sellerProfile.showName || 'Not added' %></strong></div>
+          </section>
+          <section class="profile-card">
+            <h3>Restaurant profile</h3>
+            <div class="field"><small>Restaurant name</small><strong><%= user.sellerProfile.restaurantName || 'Not added' %></strong></div>
+            <div class="field"><small>Restaurant address</small><strong><%= user.sellerProfile.restaurantAddress || 'Not added' %></strong></div>
+            <div class="field"><small>Map coordinates</small><strong><%= user.sellerProfile.restaurantLocation?.latitude ?? '—' %>, <%= user.sellerProfile.restaurantLocation?.longitude ?? '—' %></strong></div>
+          </section>
+        </div>
+        <div class="actions"><a class="action" href="/seller/settings">Edit restaurant settings</a><a class="action secondary" href="/seller/dashboard">Back to dashboard</a><a class="action secondary" href="/user/logout">Logout</a></div>
+      </section>
+    </div>
+  </main>
+  <%- include("../partials/scripts") %>
+</body>
+</html>
