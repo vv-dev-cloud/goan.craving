@@ -1,17 +1,51 @@
 <!doctype html>
-<html lang="en"><head><%- include("../partials/head") %><title>Seller registration | Goan Craving</title>
+<html lang="en"><head><%- include("../partials/head") %><title><%= settingsMode ? "Restaurant Settings" : "Seller registration" %> | Goan Craving</title>
 <style>
 .seller-wrap{max-width:620px;margin:100px auto 60px;padding:20px}.seller-card{background:#fff;border:1px solid #eadfce;border-radius:24px;padding:clamp(22px,5vw,40px);box-shadow:0 14px 45px #49301912}.seller-card h1{color:#17552b;font-size:clamp(1.8rem,5vw,2.5rem);margin:0 0 8px}.seller-card p{color:#6f675c;line-height:1.6}.seller-field{margin:20px 0}.seller-field label{display:block;font-weight:750;margin-bottom:7px}.seller-field input,.seller-field textarea{width:100%;padding:13px;border:1px solid #e5d8c7;border-radius:12px;font:inherit}.seller-field textarea{resize:vertical;min-height:95px}.seller-submit{width:100%;border:0;border-radius:12px;background:#f36b35;color:white;padding:14px;font-weight:800;cursor:pointer}.seller-error{background:#fff0ed;color:#a32c1b;padding:12px;border-radius:10px}
-</style></head><body><%- include("../partials/nave") %>
-<main class="seller-wrap"><section class="seller-card"><div style="font-size:2rem">🌴</div><h1>Become a Goan Craving seller</h1><p>Set up your seller profile first. You can add your food photos, descriptions and prices from your dashboard.</p>
+</style><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""><style>#restaurantMap{height:320px;border-radius:14px;border:1px solid #e5d8c7;z-index:1}.map-search{display:flex;gap:8px}.map-search input{flex:1;min-width:0}.map-search button{border:0;border-radius:10px;padding:0 14px;background:#17552b;color:white;font-weight:700;cursor:pointer}.map-help{font-size:.85rem;color:#6f675c}.seller-secondary{display:block;text-align:center;margin-top:14px;color:#17552b;font-weight:700}</style></head><body><%- include("../partials/nave") %>
+<main class="seller-wrap"><section class="seller-card"><div style="font-size:2rem">🌴</div><h1><%= settingsMode ? "Restaurant settings" : "Become a Goan Craving seller" %></h1><p><%= settingsMode ? "Update your restaurant name, address and pickup pin." : "Set up your seller profile and restaurant pickup location. You can manage your menu from the dashboard." %></p>
 <% if(error){ %><div class="seller-error" role="alert"><%= error %></div><% } %>
-<form method="post" action="/seller/register">
-<div class="seller-field"><label for="fullName">Full name</label><input id="fullName" name="fullName" value="<%= user.sellerProfile?.fullName || user.fullName || '' %>" minlength="2" maxlength="100" required autocomplete="name"></div>
+<form method="post" action="<%= settingsMode ? '/seller/settings' : '/seller/register' %>">
+<% if(!settingsMode){ %><div class="seller-field"><label for="fullName">Full name</label><input id="fullName" name="fullName" value="<%= user.sellerProfile?.fullName || user.fullName || '' %>" minlength="2" maxlength="100" required autocomplete="name"></div>
 <div class="seller-field"><label for="showName">Seller / shop display name</label><input id="showName" name="showName" value="<%= user.sellerProfile?.showName || '' %>" minlength="2" maxlength="80" placeholder="Example: Auntie’s Goan Kitchen" required></div>
-<div class="seller-field"><label for="restaurantName">Restaurant name</label><input id="restaurantName" name="restaurantName" value="<%= user.sellerProfile?.restaurantName || '' %>" minlength="2" maxlength="120" placeholder="Name customers will see" required autocomplete="organization"></div>
+<% } %><div class="seller-field"><label for="restaurantName">Restaurant name</label><input id="restaurantName" name="restaurantName" value="<%= user.sellerProfile?.restaurantName || '' %>" minlength="2" maxlength="120" placeholder="Name customers will see" required autocomplete="organization"></div>
 <div class="seller-field"><label for="restaurantAddress">Restaurant address</label><textarea id="restaurantAddress" name="restaurantAddress" maxlength="500" placeholder="Building, street, area, city, state and PIN code" required><%= user.sellerProfile?.restaurantAddress || '' %></textarea></div>
-<div class="seller-field"><label for="latitude">Restaurant map pin — latitude</label><input id="latitude" name="latitude" type="number" min="-90" max="90" step="any" value="<%= user.sellerProfile?.restaurantLocation?.latitude ?? '' %>" placeholder="Example: 15.12345" required></div>
+<div class="seller-field"><label for="locationSearch">Find restaurant on map</label><div class="map-search"><input id="locationSearch" type="search" placeholder="Search street, area, town or PIN code" autocomplete="off"><button id="searchLocation" type="button">Search</button></div><p class="map-help">Search for the restaurant, then tap or click the map to place the pin at its entrance. This is the restaurant location, not your current phone location.</p><div id="restaurantMap" role="application" aria-label="Interactive restaurant location map"></div></div>
+<div class="seller-field"><label for="latitude">Restaurant map pin — latitude</label><input id="latitude" name="latitude" type="number" min="-90" max="90" step="any" value="<%= user.sellerProfile?.restaurantLocation?.latitude ?? '' %>" required></div>
 <div class="seller-field"><label for="longitude">Restaurant map pin — longitude</label><input id="longitude" name="longitude" type="number" min="-180" max="180" step="any" value="<%= user.sellerProfile?.restaurantLocation?.longitude ?? '' %>" placeholder="Example: 73.98765" required></div>
-<p>Use the coordinates of the restaurant itself (for example, from its pin in Google Maps), not your current phone location unless you are at the restaurant.</p>
-<button class="seller-submit" type="submit">Save restaurant and open dashboard</button>
-</form></section></main><%- include("../partials/scripts") %></body></html>
+
+<button class="seller-submit" type="submit"><%= settingsMode ? "Save restaurant settings" : "Save restaurant and open dashboard" %></button><% if(settingsMode){ %><a class="seller-secondary" href="/seller/dashboard">Cancel and return to dashboard</a><% } %>
+</form></section></main><%- include("../partials/scripts") %>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+(function(){
+ const latInput=document.getElementById('latitude'), lngInput=document.getElementById('longitude'), addressInput=document.getElementById('restaurantAddress');
+ if(!window.L || !latInput || !lngInput) return;
+ const initialLat=Number(latInput.value), initialLng=Number(lngInput.value);
+ const valid=latInput.value!=='' && lngInput.value!=='' && Number.isFinite(initialLat) && Number.isFinite(initialLng);
+ const map=L.map('restaurantMap').setView(valid?[initialLat,initialLng]:[15.3,74.0],valid?16:8);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+ let marker=null;
+ function setPin(lat,lng,updateAddress){
+   latInput.value=Number(lat).toFixed(6); lngInput.value=Number(lng).toFixed(6);
+   if(marker) marker.setLatLng([lat,lng]); else marker=L.marker([lat,lng],{draggable:true}).addTo(map);
+   marker.on('dragend',function(e){const p=e.target.getLatLng();setPin(p.lat,p.lng,true);});
+   if(updateAddress) fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+encodeURIComponent(lat)+'&lon='+encodeURIComponent(lng))
+    .then(r=>r.ok?r.json():null).then(data=>{if(data&&data.display_name) addressInput.value=data.display_name.slice(0,500);}).catch(()=>{});
+ }
+ if(valid){setPin(initialLat,initialLng,false);} else {setPin(15.3,74.0,false);latInput.value='';lngInput.value='';}
+ map.on('click',function(e){setPin(e.latlng.lat,e.latlng.lng,true);});
+ async function search(){
+   const q=document.getElementById('locationSearch').value.trim();if(!q)return;
+   const btn=document.getElementById('searchLocation');btn.disabled=true;btn.textContent='Searching…';
+   try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(q));const data=await r.json();
+    if(data&&data[0]){const lat=Number(data[0].lat),lng=Number(data[0].lon);map.setView([lat,lng],17);setPin(lat,lng,false);addressInput.value=(data[0].display_name||q).slice(0,500);}
+    else alert('No matching place found. Try a nearby street or landmark.');
+   }catch(e){alert('Location search is temporarily unavailable. You can still place the pin directly on the map.');}
+   finally{btn.disabled=false;btn.textContent='Search';}
+ }
+ document.getElementById('searchLocation').addEventListener('click',search);
+ document.getElementById('locationSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();search();}});
+ setTimeout(()=>map.invalidateSize(),150);
+})();
+</script></body></html>
