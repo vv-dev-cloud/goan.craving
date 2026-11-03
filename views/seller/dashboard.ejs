@@ -63,7 +63,7 @@
         <a class="seller-nav active" href="/seller/dashboard">▦ Dashboard</a>
         <a class="seller-nav" href="#menu">☷ My food menu</a>
         <a class="seller-nav" href="/seller/orders">▤ Orders & sales</a>
-        <a class="seller-nav" href="/seller/products/new">＋ Add food item</a>
+        <a class="seller-nav" href="/seller/products/new">＋ Add food item</a>\n        <a class="seller-nav" href="/seller/settings">⚙ Restaurant settings</a>
       </nav>
     </aside>
     <section class="seller-main">
@@ -81,7 +81,7 @@
           <strong><%= user.sellerProfile.restaurantName || user.sellerProfile.showName %></strong><br>
           <span><%= user.sellerProfile.restaurantAddress || 'Restaurant address not added' %></span><br>
           <small style="color:#788078">Map pin: <%= user.sellerProfile.restaurantLocation?.latitude ?? '—' %>, <%= user.sellerProfile.restaurantLocation?.longitude ?? '—' %></small>
-          <div style="margin-top:14px"><a class="seller-action" href="/seller/register">Edit restaurant details</a></div>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><a class="seller-action" href="/seller/settings">⚙ Edit restaurant details</a><a class="seller-action" style="background:#174b2b" href="/seller/settings">＋ Add / update restaurant location</a></div>
         </div>
       </section>
       <section class="seller-stats" aria-label="Sales overview">
