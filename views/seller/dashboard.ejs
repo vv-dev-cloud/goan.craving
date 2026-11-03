@@ -51,6 +51,20 @@
     .seller-delete{border:1px solid #f0d4cc;background:#fff8f5;color:#ad442c;padding:8px 12px;border-radius:9px;font-weight:700;cursor:pointer}
     @media(max-width:900px){.seller-shell{grid-template-columns:1fr;margin-top:84px}.seller-sidebar{min-height:auto;padding:15px}.seller-brand{padding:4px 10px 12px}.seller-side-label{display:none}.seller-side-links{display:flex;gap:5px;flex-wrap:wrap}.seller-nav{padding:10px 12px}.seller-stats{gap:10px}}
     @media(max-width:580px){.seller-shell{padding:12px;margin-bottom:25px}.seller-stats{grid-template-columns:1fr}.seller-stat{padding:15px}.seller-welcome{padding:20px}.seller-welcome-mark{display:none}.seller-panel-head{padding:17px}.seller-action{width:100%}.seller-heading{align-items:stretch}.seller-heading>div{width:100%}}
+
+    .seller-sidebar{box-shadow:0 14px 35px #174b2b15;position:sticky;top:92px}
+    .seller-brand{font-size:1.28rem}
+    .seller-heading h1{letter-spacing:-1px}
+    .seller-welcome{min-height:135px;box-shadow:0 8px 22px #174b2b08}
+    .seller-stat{box-shadow:0 8px 22px #1d3c2510;transition:transform .18s,box-shadow .18s}
+    .seller-stat:hover{transform:translateY(-3px);box-shadow:0 13px 28px #1d3c2518}
+    .seller-panel{box-shadow:0 8px 24px #1d3c2508}
+    .seller-panel-head h2{font-weight:850}
+    .seller-nav{transition:background .16s,transform .16s}
+    .seller-nav:hover{transform:translateX(2px)}
+    .seller-action{transition:transform .16s,box-shadow .16s}
+    .seller-action:hover{transform:translateY(-2px);box-shadow:0 9px 18px #ef71382e}
+    @media(max-width:900px){.seller-sidebar{position:static}.seller-side-links{gap:7px}}
   </style>
 </head>
 <body>
@@ -64,16 +78,28 @@
         <a class="seller-nav" href="#menu">☷ My food menu</a>
         <a class="seller-nav" href="/seller/orders">▤ Orders & sales</a>
         <a class="seller-nav" href="/seller/products/new">＋ Add food item</a>
+        <a class="seller-nav" href="/seller/profile">♙ Account profile</a>
+        <a class="seller-nav" href="/seller/settings">⚙ Settings</a>
+        <a class="seller-nav" href="/user/logout">↪ Logout</a>
       </nav>
     </aside>
     <section class="seller-main">
       <header class="seller-heading">
-        <div><p class="seller-eyebrow">SELLER DASHBOARD</p><h1>Welcome back, <%= user.sellerProfile.showName %>!</h1><p class="seller-subtitle">Here’s what’s happening with your food menu.</p></div>
-        <a class="seller-action" href="/seller/products/new">＋ Add food item</a>
+        <div><p class="seller-eyebrow">YOUR SELLER WORKSPACE</p><h1>Good day, <%= user.sellerProfile.showName %> 👋</h1><p class="seller-subtitle">A quick overview of your restaurant, orders and menu.</p></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="seller-action" href="/seller/products/new">＋ Add food item</a><a class="seller-action" style="background:#174b2b" href="/seller/profile">♙ Account</a></div>
       </header>
       <section class="seller-welcome">
-        <div><h2>Your kitchen, your business 🌿</h2><p>Keep your menu fresh and let customers discover your Goan flavours.</p></div>
+        <div><h2><%= user.sellerProfile.restaurantName || user.sellerProfile.showName %> 🌿</h2><p>Manage your restaurant operations and keep your Goan flavours ready for customers.</p></div>
         <div class="seller-welcome-mark" aria-hidden="true">🥘</div>
+      </section>
+      <section class="seller-panel" style="margin-bottom:24px">
+        <div class="seller-panel-head"><div><h2>Restaurant pickup location</h2><p>This saved location will be used for delivery routing and ETA calculations.</p></div></div>
+        <div style="padding:20px 23px;line-height:1.7">
+          <strong><%= user.sellerProfile.restaurantName || user.sellerProfile.showName %></strong><br>
+          <span><%= user.sellerProfile.restaurantAddress || 'Restaurant address not added' %></span><br>
+          <small style="color:#788078">Map pin: <%= user.sellerProfile.restaurantLocation?.latitude ?? '—' %>, <%= user.sellerProfile.restaurantLocation?.longitude ?? '—' %></small>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><a class="seller-action" href="/seller/settings">⚙ Edit restaurant details</a><a class="seller-action" style="background:#174b2b" href="/seller/settings">＋ Add / update restaurant location</a></div>
+        </div>
       </section>
       <section class="seller-stats" aria-label="Sales overview">
         <article class="seller-stat"><div class="seller-stat-top"><span>Total orders</span><span class="seller-stat-icon">▤</span></div><strong><%= sellerOrderCount %></strong><small>Orders containing your food</small></article>
