@@ -83,7 +83,7 @@ router.get("/search", async (req, res) => {
     const cart = await loadCart(req);
     res.render("food/search-results", {
       title: "Search food | Goan Craving", user: req.user || null, search, products,
-      postalCode: validPostalCode || savedPostalCode, postalCode: validPostalCode || savedPostalCode,
+      postalCode: validPostalCode || savedPostalCode,
       categories: categories.filter(Boolean).sort((a, b) => a.localeCompare(b)),
       restaurants: restaurants.filter(Boolean).sort((a, b) => a.localeCompare(b)),
       filters: { category, restaurant, minPrice: minRaw, maxPrice: maxRaw, sort }, cartCount: cart.count
@@ -110,6 +110,7 @@ router.get("/products/:id", async (req, res) => {
       title: product.name + " | Goan Craving",
       user: req.user || null,
       product,
+      postalCode: /^[0-9]{5,10}$/.test(postalCode) ? postalCode : "",
       cartCount: cart.count,
       reviews,
       averageRating,
