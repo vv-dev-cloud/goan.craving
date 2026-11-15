@@ -27,7 +27,7 @@ const DeliveryAddressSchema = new Schema({
 const OrderEventSchema = new Schema({
   status: { type: String, required: true },
   actorId: { type: Schema.Types.ObjectId, ref: "user", default: null },
-  actorRole: { type: String, enum: ["customer", "seller", "delivery", "admin", "system"], default: "system" },
+  actorRole: { type: String, enum: ["customer", "seller", "delivery", "employee", "admin", "system"], default: "system" },
   note: { type: String, maxlength: 500, default: "" },
   createdAt: { type: Date, default: Date.now }
 }, { _id: false });
