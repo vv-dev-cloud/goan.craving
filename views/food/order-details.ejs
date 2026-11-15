@@ -13,6 +13,18 @@
   <h1>Order details</h1>
   <p class="muted">Order #<%=(order.orderNumber || ("GC-" + String(order._id).slice(-8).toUpperCase()))%> · <%=new Date(order.createdAt).toLocaleString("en-IN")%></p>
   <% if(reviewMessage==="success"){ %><div class="notice">Your food review has been saved. Thank you for sharing your experience!</div><% } else if(reviewMessage==="already-submitted"){ %><div class="notice">Your review is already recorded. You can edit it below.</div><% } %>
+  <section class="panel" aria-label="Order progress">
+    <h2>Order progress</h2>
+    <% if(["cancelled","rejected"].includes(order.orderStatus)){ %>
+      <p class="notice" style="background:#fff0ed;color:#a33e2c">This order was <strong><%=order.orderStatus%></strong>. <% if(order.refundStatus&&order.refundStatus!=="none"){ %>Refund status: <strong><%=order.refundStatus%></strong>.<% } %></p>
+    <% } else { %>
+      <ol style="list-style:none;padding:0;margin:0;display:grid;gap:12px">
+        <% const steps=[["placed","Order placed"],["confirmed","Restaurant confirmed"],["preparing","Preparing your food"],["ready_for_pickup","Ready for pickup"],["out_for_delivery","Out for delivery"],["delivered","Delivered"]]; const current=steps.findIndex(s=>s[0]===order.orderStatus); %>
+        <% steps.forEach((step,index)=>{ %><li style="display:flex;gap:12px;align-items:center;color:<%=index<=current?"#205b36":"#938b80"%>"><span style="width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:<%=index<=current?"#eaf4eb":"#f2eee8"%>;font-weight:900"><%=index<=current?"✓":index+1%></span><strong><%=step[1]%></strong></li><% }) %>
+      </ol>
+      <p class="muted" style="font-size:.82rem;margin-bottom:0">Tracking updates appear as the restaurant and delivery team update your order.</p>
+    <% } %>
+  </section>
   <section class="panel">
     <h2>Ordered food</h2>
     <% order.items.forEach(item=>{ const productId=String(item.product||""); const review=reviewsByProduct[productId]; %>
@@ -51,7 +63,21 @@
     <div class="item"><strong>Total</strong><strong>₹<%=Number(order.total).toFixed(2)%></strong></div>
   </section>
   <section class="panel"><h2>Delivery address</h2><p><%=order.deliveryAddress.fullName%><br><%=order.deliveryAddress.phone%><br><%=order.deliveryAddress.addressLine%>, <%=order.deliveryAddress.area%><br><%=order.deliveryAddress.city%>, <%=order.deliveryAddress.state%> - <%=order.deliveryAddress.postalCode%></p></section>
-  <section class="panel"><h2>Payment &amp; status</h2><p><%=({cod:"Cash on Delivery",upi:"UPI",card:"Credit / debit card"})[order.paymentMethod]%> · <%=order.paymentStatus%></p><p>Order status: <strong><%=order.orderStatus.replace(/_/g," ")%></strong></p><a href="/orders">← My Orders</a></section>
+  <section class="panel"><h2>Payment &amp; status</h2><p><%=({cod:"Cash on Delivery",upi:"UPI",card:"Credit / debit card"})[order.paymentMethod]%> · <%=order.paymentStatus%></p><p>Order status: <strong><%=order.orderStatus.replace(/_/g," ")%></strong></p>
+    <% if(order.refundStatus&&order.refundStatus!=="none"){ %><p>Refund: <strong><%=order.refundStatus%></strong><% if(order.refundAmount){ %> · ₹<%=Number(order.refundAmount).toFixed(2)%><% } %></p><% } %>
+    <% if(["placed","confirmed"].includes(order.orderStatus)){ %><button class="submit" type="button" onclick="cancelCustomerOrder('<%=order._id%>')" style="background:#fff0ed;color:#a33e2c">Cancel order</button><% } %>
+    <p><a href="/orders">← My Orders</a></p></section>
+  <script>
+    async function cancelCustomerOrder(id){
+      if(!confirm("Cancel this order?")) return;
+      try{
+        const response=await fetch("/account/orders/"+id+"/cancel",{method:"POST",credentials:"same-origin",headers:{"Accept":"application/json"}});
+        const result=await response.json();
+        if(!response.ok||!result.success) throw new Error(result.message||"Unable to cancel this order.");
+        location.reload();
+      }catch(error){alert(error.message);}
+    }
+  </script>
 </main>
 <%- include("../partials/scripts") %>
 </body>
