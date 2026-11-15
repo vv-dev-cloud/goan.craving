@@ -4,7 +4,7 @@ const { Schema, model } = mongoose;
 const DeliveryEventSchema = new Schema({
   status: { type: String, required: true },
   actorId: { type: Schema.Types.ObjectId, ref: "user", default: null },
-  actorRole: { type: String, enum: ["seller", "delivery", "admin", "system"], default: "system" },
+  actorRole: { type: String, enum: ["seller", "delivery", "employee", "admin", "system"], default: "system" },
   note: { type: String, maxlength: 500, default: "" },
   createdAt: { type: Date, default: Date.now }
 }, { _id: false });
@@ -13,6 +13,7 @@ const DeliveryTaskSchema = new Schema({
   order: { type: Schema.Types.ObjectId, ref: "FoodOrder", required: true, unique: true, index: true },
   restaurant: { type: Schema.Types.ObjectId, ref: "user", required: true, index: true },
   deliveryPerson: { type: Schema.Types.ObjectId, ref: "user", default: null, index: true },
+  assignmentId: { type: String, unique: true, sparse: true, index: true },
   status: {
     type: String,
     enum: ["pending_assignment", "assigned", "accepted", "at_restaurant", "picked_up", "en_route", "delivered", "assignment_failed", "delivery_failed", "cancelled", "returned"],
