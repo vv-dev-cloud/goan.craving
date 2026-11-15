@@ -19,7 +19,7 @@
       <p class="notice" style="background:#fff0ed;color:#a33e2c">This order was <strong><%=order.orderStatus%></strong>. <% if(order.refundStatus&&order.refundStatus!=="none"){ %>Refund status: <strong><%=order.refundStatus%></strong>.<% } %></p>
     <% } else { %>
       <ol style="list-style:none;padding:0;margin:0;display:grid;gap:12px">
-        <% const steps=[["placed","Order placed"],["confirmed","Restaurant confirmed"],["preparing","Preparing your food"],["ready_for_pickup","Ready for pickup"],["out_for_delivery","Out for delivery"],["delivered","Delivered"]]; const current=steps.findIndex(s=>s[0]===order.orderStatus); %>
+        <% const steps=[["placed","Order placed"],["accepted","Restaurant accepted"],["confirmed","Restaurant confirmed"],["preparing","Preparing your food"],["ready_for_pickup","Ready for pickup"],["out_for_delivery","Out for delivery"],["delivered","Delivered"]]; const current=steps.findIndex(s=>s[0]===order.orderStatus); %>
         <% steps.forEach((step,index)=>{ %><li style="display:flex;gap:12px;align-items:center;color:<%=index<=current?"#205b36":"#938b80"%>"><span style="width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:<%=index<=current?"#eaf4eb":"#f2eee8"%>;font-weight:900"><%=index<=current?"✓":index+1%></span><strong><%=step[1]%></strong></li><% }) %>
       </ol>
       <p class="muted" style="font-size:.82rem;margin-bottom:0">Tracking updates appear as the restaurant and delivery team update your order.</p>
