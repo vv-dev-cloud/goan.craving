@@ -142,7 +142,7 @@ router.post("/cart/add", async (req, res) => {
     if (existing) existing.quantity = Math.min(99, existing.quantity + quantity);
     else cart.items.push({ product: product._id, quantity });
     await cart.save();
-    return res.redirect(req.body.buyNow === "1" ? "/cart" : "/cart?added=1");
+    return res.redirect(req.body.buyNow === "1" ? "/checkout?buyNow=" + encodeURIComponent(id) : "/cart?added=1");
   } catch (error) { console.error("Add food to cart:", error); res.status(500).send("Unable to add this item to your cart."); }
 });
 router.post("/cart/update", async (req, res) => {
