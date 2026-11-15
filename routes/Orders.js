@@ -49,7 +49,7 @@ router.post("/checkout", requireUser, async (req, res) => {
       const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
       return res.status(400).render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress: null, buyNowId, error: "Please complete every required delivery address field." });
     }
-    if (!/^\\+?[0-9\\s()-]{8,18}$/.test(address.phone) || !/^[0-9]{5,10}$/.test(address.postalCode)) {
+    if (!/^\+?[0-9\s()-]{8,18}$/.test(address.phone) || !/^[0-9]{5,10}$/.test(address.postalCode)) {
       const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
       return res.status(400).render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress: null, buyNowId, error: "Enter a valid phone number and postal code." });
     }
