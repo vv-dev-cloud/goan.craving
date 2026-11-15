@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const FoodCart = require("../models/FoodCart");
+const FoodProduct = require("../models/FoodProduct");
 const FoodOrder = require("../models/FoodOrder");
 const Comment = require("../models/Comment");
 const CustomerAccount = require("../models/CustomerAccount");
@@ -12,19 +13,33 @@ const ownerKey = req => "user:" + String(req.user._id);
 router.get("/checkout", requireUser, async (req, res) => {
   try {
     const cart = await FoodCart.findOne({ ownerKey: ownerKey(req) }).populate("items.product").lean();
-    const items = (cart?.items || []).filter(i => i.product && i.product.isAvailable);
+    let items = (cart?.items || []).filter(i => i.product && i.product.isAvailable);
+    const buyNowId = String(req.query.buyNow || "");
+    if (buyNowId) {
+      if (!mongoose.isValidObjectId(buyNowId)) return res.redirect("/search");
+      const product = await FoodProduct.findOne({ _id: buyNowId, isAvailable: true }).lean();
+      if (!product) return res.status(404).send("This food item is no longer available.");
+      items = [{ product, quantity: 1 }];
+    }
     if (!items.length) return res.redirect("/cart");
     const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
     const account = await CustomerAccount.findOne({ user: req.user._id }).lean();
     const defaultAddress = account?.addresses?.find(address => address.isDefault) || account?.addresses?.[0] || null;
-    res.render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress, error: null });
+    res.render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress, buyNowId, error: null });
   } catch (e) { console.error("Checkout:", e); res.status(500).send("Unable to open checkout."); }
 });
 
 router.post("/checkout", requireUser, async (req, res) => {
   try {
     const cart = await FoodCart.findOne({ ownerKey: ownerKey(req) }).populate("items.product");
-    const items = (cart?.items || []).filter(i => i.product && i.product.isAvailable);
+    let items = (cart?.items || []).filter(i => i.product && i.product.isAvailable);
+    const buyNowId = String(req.body.buyNowId || "");
+    if (buyNowId) {
+      if (!mongoose.isValidObjectId(buyNowId)) return res.status(400).send("Invalid food item.");
+      const product = await FoodProduct.findOne({ _id: buyNowId, isAvailable: true });
+      if (!product) return res.status(409).send("This food item is no longer available.");
+      items = [{ product, quantity: 1 }];
+    }
     if (!items.length) return res.redirect("/cart");
     const fields = ["fullName","phone","addressLine","area","city","state","postalCode"];
     const address = {};
@@ -45,8 +60,15 @@ router.post("/checkout", requireUser, async (req, res) => {
     // Stable customer-facing order number shared with the operations dashboard.
     order.orderNumber = "GC-" + String(order._id).slice(-8).toUpperCase();
     await order.save();
-    cart.items = [];
-    await cart.save();
+    if (buyNowId) {
+      if (cart) {
+        cart.items = cart.items.filter(row => String(row.product) !== buyNowId);
+        await cart.save();
+      }
+    } else {
+      cart.items = [];
+      await cart.save();
+    }
     await NotificationService.createNotification(req.user._id, "order_placed", { title: "Order received", message: "Your order with " + order.items.length + " item(s) has been placed. We will keep you updated.", order: order._id, url: "/orders/" + order._id, pushTitle: "Goan Craving · Order received", pushMessage: "Your order #" + order.orderNumber + " has been placed." });
     return res.redirect("/orders/" + order._id);
   } catch (e) { console.error("Place order:", e); res.status(500).send("Unable to place your order."); }
