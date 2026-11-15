@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const FoodCart = require("../models/FoodCart");
+const FoodProduct = require("../models/FoodProduct");
 const FoodOrder = require("../models/FoodOrder");
 const Comment = require("../models/Comment");
 const CustomerAccount = require("../models/CustomerAccount");
@@ -12,41 +13,83 @@ const ownerKey = req => "user:" + String(req.user._id);
 router.get("/checkout", requireUser, async (req, res) => {
   try {
     const cart = await FoodCart.findOne({ ownerKey: ownerKey(req) }).populate("items.product").lean();
-    const items = (cart?.items || []).filter(i => i.product && i.product.isAvailable);
+    let items = (cart?.items || []).filter(i => i.product && i.product.isAvailable);
+    const buyNowId = String(req.query.buyNow || "");
+    if (buyNowId) {
+      if (!mongoose.isValidObjectId(buyNowId)) return res.redirect("/search");
+      const product = await FoodProduct.findOne({ _id: buyNowId, isAvailable: true }).lean();
+      if (!product) return res.status(404).send("This food item is no longer available.");
+      items = [{ product, quantity: 1 }];
+    }
     if (!items.length) return res.redirect("/cart");
     const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
     const account = await CustomerAccount.findOne({ user: req.user._id }).lean();
     const defaultAddress = account?.addresses?.find(address => address.isDefault) || account?.addresses?.[0] || null;
-    res.render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress, error: null });
+    res.render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress, buyNowId, error: null });
   } catch (e) { console.error("Checkout:", e); res.status(500).send("Unable to open checkout."); }
 });
 
 router.post("/checkout", requireUser, async (req, res) => {
   try {
     const cart = await FoodCart.findOne({ ownerKey: ownerKey(req) }).populate("items.product");
-    const items = (cart?.items || []).filter(i => i.product && i.product.isAvailable);
+    let items = (cart?.items || []).filter(i => i.product && i.product.isAvailable);
+    const buyNowId = String(req.body.buyNowId || "");
+    if (buyNowId) {
+      if (!mongoose.isValidObjectId(buyNowId)) return res.status(400).send("Invalid food item.");
+      const product = await FoodProduct.findOne({ _id: buyNowId, isAvailable: true });
+      if (!product) return res.status(409).send("This food item is no longer available.");
+      items = [{ product, quantity: 1 }];
+    }
     if (!items.length) return res.redirect("/cart");
-    const fields = ["fullName","phone","addressLine","area","city","state","postalCode"];
+    const requiredFields = ["fullName","phone","addressLine","area","city","state","postalCode"];
     const address = {};
-    for (const field of fields) address[field] = String(req.body[field] || "").trim().slice(0, 180);
-    if (fields.some(f => !address[f])) {
+    for (const field of requiredFields) address[field] = String(req.body[field] || "").trim().slice(0, 180);
+    address.instructions = String(req.body.instructions || "").trim().slice(0, 250);
+    if (requiredFields.some(field => !address[field])) {
       const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-      return res.status(400).render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress: null, error: "Please complete every delivery address field." });
+      return res.status(400).render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress: null, buyNowId, error: "Please complete every required delivery address field." });
     }
     if (!/^\+?[0-9\s()-]{8,18}$/.test(address.phone) || !/^[0-9]{5,10}$/.test(address.postalCode)) {
       const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-      return res.status(400).render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress: null, error: "Enter a valid phone number and postal code." });
+      return res.status(400).render("food/checkout", { title: "Checkout | Goan Craving", user: req.user, items, total, defaultAddress: null, buyNowId, error: "Enter a valid phone number and postal code." });
     }
     const paymentMethod = String(req.body.paymentMethod || "");
-    if (!["cod","upi","card"].includes(paymentMethod)) return res.status(400).send("Select a valid payment method.");
-    // Persist the delivery details to the customer account for the next checkout.\n    const customerAccount = await CustomerAccount.findOneAndUpdate(\n      { user: req.user._id },\n      { $setOnInsert: { user: req.user._id } },\n      { new: true, upsert: true, setDefaultsOnInsert: true }\n    );\n    const normalized = value => String(value || "").trim().toLowerCase();\n    let savedAddress = customerAccount.addresses.find(a =>\n      ["fullName", "phone", "addressLine", "area", "city", "state", "postalCode"].every(field => normalized(a[field]) === normalized(address[field]))\n    );\n    if (!savedAddress) {\n      customerAccount.addresses.forEach(a => { a.isDefault = false; });\n      savedAddress = customerAccount.addresses.create({ ...address, label: "Home", isDefault: true });\n      customerAccount.addresses.push(savedAddress);\n    }\n    customerAccount.addresses.forEach(a => { a.isDefault = String(a._id) === String(savedAddress._id); });\n    await customerAccount.save();\n\n    const orderItems = items.map(i => ({ product: i.product._id, seller: i.product.seller || null, sellerName: i.product.sellerName || "", name: i.product.name, imageURL: i.product.imageURL, unitPrice: i.product.price, quantity: i.quantity }));
+    if (paymentMethod !== "cod") return res.status(400).send("Online payments are not enabled yet. Please choose Cash on Delivery.");
+
+    // Save the delivery address for the customer's next checkout.
+    const customerAccount = await CustomerAccount.findOneAndUpdate(
+      { user: req.user._id },
+      { $setOnInsert: { user: req.user._id } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+    const normalized = value => String(value || "").trim().toLowerCase();
+    let savedAddress = customerAccount.addresses.find(a =>
+      requiredFields.every(field => normalized(a[field]) === normalized(address[field])) &&
+      normalized(a.instructions) === normalized(address.instructions)
+    );
+    if (!savedAddress) {
+      customerAccount.addresses.forEach(a => { a.isDefault = false; });
+      savedAddress = customerAccount.addresses.create({ ...address, label: "Home", isDefault: true });
+      customerAccount.addresses.push(savedAddress);
+    }
+    customerAccount.addresses.forEach(a => { a.isDefault = String(a._id) === String(savedAddress._id); });
+    await customerAccount.save();
+
+    const orderItems = items.map(i => ({ product: i.product._id, seller: i.product.seller || null, sellerName: i.product.sellerName || "", name: i.product.name, imageURL: i.product.imageURL, unitPrice: i.product.price, quantity: i.quantity }));
     const total = orderItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
     const order = await FoodOrder.create({ user: req.user._id, items: orderItems, deliveryAddress: address, paymentMethod, paymentStatus: "pending", total });
     // Stable customer-facing order number shared with the operations dashboard.
     order.orderNumber = "GC-" + String(order._id).slice(-8).toUpperCase();
     await order.save();
-    cart.items = [];
-    await cart.save();
+    if (buyNowId) {
+      if (cart) {
+        cart.items = cart.items.filter(row => String(row.product) !== buyNowId);
+        await cart.save();
+      }
+    } else {
+      cart.items = [];
+      await cart.save();
+    }
     await NotificationService.createNotification(req.user._id, "order_placed", { title: "Order received", message: "Your order with " + order.items.length + " item(s) has been placed. We will keep you updated.", order: order._id, url: "/orders/" + order._id, pushTitle: "Goan Craving · Order received", pushMessage: "Your order #" + order.orderNumber + " has been placed." });
     return res.redirect("/orders/" + order._id);
   } catch (e) { console.error("Place order:", e); res.status(500).send("Unable to place your order."); }
